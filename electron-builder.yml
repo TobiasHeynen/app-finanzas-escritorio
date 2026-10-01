@@ -1,0 +1,24 @@
+appId: ar.tobiasheynen.misfinanzas
+productName: Mis Finanzas
+directories:
+  buildResources: build
+  output: release/${version}
+files:
+  - out/**
+  - package.json
+  - '!**/*.map'
+asarUnpack:
+  - '**/*.node'
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  executableName: mis-finanzas
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  shortcutName: Mis Finanzas
+  artifactName: mis-finanzas-setup-${version}.${ext}
+npmRebuild: true
