@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeChargeMonth } from '@main/services/charge-month'
+import { computeChargeMonth } from '@shared/domain/charge-month'
 
 const card = (closingDay: number) => ({ type: 'tarjeta_credito' as const, closingDay })
 

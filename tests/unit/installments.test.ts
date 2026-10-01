@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildInstallmentSchedule, firstChargeMonthFrom } from '@main/services/installments'
+import { buildInstallmentSchedule, firstChargeMonthFrom } from '@shared/domain/installments'
 
 describe('buildInstallmentSchedule', () => {
   it('genera N cuotas en meses consecutivos con el resto en la primera', () => {

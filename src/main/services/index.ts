@@ -1,5 +1,6 @@
 import type { ServiceContext } from './context'
 import { createExpensesService } from './expenses'
+import { createIncomesService } from './incomes'
 import { createRecurringService } from './recurring'
 import { createSummaryService } from './summary'
 
@@ -8,6 +9,7 @@ export function createServices(ctx: ServiceContext) {
   return {
     ctx,
     expenses: createExpensesService(ctx),
+    incomes: createIncomesService(ctx),
     recurring,
     summary: createSummaryService(ctx, recurring),
   }

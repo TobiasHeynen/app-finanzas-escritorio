@@ -1,7 +1,46 @@
 // Lista blanca de canales IPC. Este archivo NO importa zod: lo usa el preload (sandbox),
 // que sólo puede bundlear código chico y sin dependencias pesadas.
 // Un test verifica que coincida con las claves de `ipcContract`.
-export const IPC_CHANNELS = ['app:ping'] as const
+export const IPC_CHANNELS = [
+  'app:ping',
+  'app:info',
+  'catalog:list',
+  'catalog:createCategory',
+  'catalog:updateCategory',
+  'catalog:archiveCategory',
+  'catalog:reorderCategories',
+  'catalog:createSubcategory',
+  'catalog:renameSubcategory',
+  'catalog:archiveSubcategory',
+  'catalog:reorderSubcategories',
+  'paymentMethods:list',
+  'paymentMethods:create',
+  'paymentMethods:update',
+  'paymentMethods:archive',
+  'paymentMethods:reorder',
+  'month:overview',
+  'expenses:create',
+  'expenses:update',
+  'expenses:setAmount',
+  'expenses:duplicate',
+  'expenses:remove',
+  'expenses:restore',
+  'expenses:search',
+  'plans:create',
+  'plans:get',
+  'plans:update',
+  'plans:remove',
+  'recurring:list',
+  'recurring:create',
+  'recurring:update',
+  'recurring:remove',
+  'incomes:list',
+  'incomes:create',
+  'incomes:update',
+  'incomes:remove',
+  'incomes:restore',
+  'incomes:copyPreviousSalary',
+] as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[number]
 

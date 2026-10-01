@@ -9,9 +9,9 @@ import type {
   InstallmentPlanUpdate,
   PlanScope,
 } from '@shared/types'
-import { computeChargeMonth } from './charge-month'
+import { computeChargeMonth } from '@shared/domain/charge-month'
 import { currentMonthOf, type ServiceContext } from './context'
-import { buildInstallmentSchedule, firstChargeMonthFrom } from './installments'
+import { buildInstallmentSchedule, firstChargeMonthFrom } from '@shared/domain/installments'
 
 export type ExpensesService = ReturnType<typeof createExpensesService>
 

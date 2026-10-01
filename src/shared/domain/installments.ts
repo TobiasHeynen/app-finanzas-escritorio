@@ -1,5 +1,5 @@
-import { splitInstallments, type Cents } from '@shared/money'
-import { addMonths, type Month } from '@shared/months'
+import { splitInstallments, type Cents } from '../money'
+import { addMonths, type Month } from '../months'
 
 export interface InstallmentRow {
   number: number

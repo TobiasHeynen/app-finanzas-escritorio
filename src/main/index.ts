@@ -1,5 +1,4 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
-import { join } from 'node:path'
 import { bootstrapDatabase } from './db/bootstrap'
 import { SchemaTooNewError } from './db/migrate'
 import { createRepos } from './repositories'
@@ -9,11 +8,13 @@ import { applySecurityPolicies } from './security'
 import { createMainWindow } from './window'
 import { registerIpcHandlers } from './ipc/register'
 import { createHandlers } from './ipc/handlers'
+import { dbPath } from './paths'
+
+// Locale de Chromium en es-AR: inputs de fecha dd/mm/aaaa y textos nativos en español.
+app.commandLine.appendSwitch('lang', 'es-AR')
 
 let mainWindow: BrowserWindow | null = null
 let services: Services | null = null
-
-export const dbPath = (): string => join(app.getPath('userData'), 'finanzas.db')
 
 function startServices(): Services {
   const { db } = bootstrapDatabase(dbPath())
