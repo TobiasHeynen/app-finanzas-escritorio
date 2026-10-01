@@ -1,0 +1,299 @@
+/**
+ * Schemas zod de las entidades y los inputs. Son la fuente de verdad de los tipos compartidos
+ * (ver types.ts). Montos siempre enteros en centavos.
+ */
+import { z } from 'zod'
+import { MAX_CENTS } from './money'
+import { isIsoDate, isMonth } from './months'
+
+export const idSchema = z.number().int().positive()
+export const monthSchema = z.string().refine(isMonth, 'Mes inválido (YYYY-MM)')
+export const isoDateSchema = z.string().refine(isIsoDate, 'Fecha inválida (YYYY-MM-DD)')
+export const centsSchema = z.number().int().min(0).max(MAX_CENTS)
+export const signedCentsSchema = z.number().int().min(-MAX_CENTS).max(MAX_CENTS)
+export const currencySchema = z.enum(['ARS', 'USD'])
+export const colorSchema = z.string().regex(/^#[0-9a-fA-F]{6}$/, 'Color inválido')
+export const dayOfMonthSchema = z.number().int().min(1).max(31)
+const nameSchema = (max: number) => z.string().trim().min(1, 'Requerido').max(max)
+
+export const paymentMethodTypeSchema = z.enum([
+  'efectivo',
+  'debito',
+  'transferencia',
+  'tarjeta_credito',
+])
+
+// ---------- Catálogo ----------
+
+export const subcategorySchema = z.object({
+  id: idSchema,
+  categoryId: idSchema,
+  name: z.string(),
+  sortOrder: z.number().int(),
+  archived: z.boolean(),
+})
+
+export const categorySchema = z.object({
+  id: idSchema,
+  name: z.string(),
+  icon: z.string(),
+  color: z.string(),
+  sortOrder: z.number().int(),
+  archived: z.boolean(),
+  subcategories: z.array(subcategorySchema),
+})
+
+export const categoryInputSchema = z
+  .object({ name: nameSchema(60), icon: z.string().min(1).max(40), color: colorSchema })
+  .strict()
+
+export const subcategoryInputSchema = z
+  .object({ categoryId: idSchema, name: nameSchema(60) })
+  .strict()
+
+export const paymentMethodSchema = z.object({
+  id: idSchema,
+  name: z.string(),
+  type: paymentMethodTypeSchema,
+  closingDay: z.number().int().nullable(),
+  dueDay: z.number().int().nullable(),
+  color: z.string().nullable(),
+  sortOrder: z.number().int(),
+  archived: z.boolean(),
+})
+
+export const paymentMethodInputSchema = z
+  .object({
+    name: nameSchema(60),
+    type: paymentMethodTypeSchema,
+    closingDay: dayOfMonthSchema.nullable(),
+    dueDay: dayOfMonthSchema.nullable(),
+    color: colorSchema.nullable(),
+  })
+  .strict()
+  .superRefine((v, ctx) => {
+    if (v.type === 'tarjeta_credito' && v.closingDay === null) {
+      ctx.addIssue({ code: 'custom', path: ['closingDay'], message: 'Indicá el día de cierre' })
+    }
+  })
+  .transform((v) => (v.type === 'tarjeta_credito' ? v : { ...v, closingDay: null, dueDay: null }))
+
+// ---------- Gastos ----------
+
+export const expenseSchema = z.object({
+  id: idSchema,
+  subcategoryId: idSchema,
+  categoryId: idSchema,
+  paymentMethodId: idSchema,
+  description: z.string(),
+  purchaseDate: isoDateSchema,
+  chargeMonth: monthSchema,
+  chargeMonthLocked: z.boolean(),
+  amountCents: centsSchema.nullable(),
+  installment: z
+    .object({ planId: idSchema, number: z.number().int(), count: z.number().int() })
+    .nullable(),
+  recurringTemplateId: idSchema.nullable(),
+  notes: z.string().nullable(),
+})
+
+/** Gasto recurrente proyectado en un mes futuro: no está guardado, se muestra en gris. */
+export const projectedExpenseSchema = z.object({
+  templateId: idSchema,
+  description: z.string(),
+  subcategoryId: idSchema,
+  categoryId: idSchema,
+  paymentMethodId: idSchema,
+  amountCents: centsSchema.nullable(),
+  date: isoDateSchema,
+  month: monthSchema,
+})
+
+export const expenseInputSchema = z
+  .object({
+    subcategoryId: idSchema,
+    paymentMethodId: idSchema,
+    description: z.string().trim().max(200),
+    purchaseDate: isoDateSchema,
+    amountCents: centsSchema.nullable(),
+    /** Si viene, el mes de imputación queda fijado a mano. */
+    chargeMonthOverride: monthSchema.nullable(),
+    notes: z.string().trim().max(1000).nullable(),
+  })
+  .strict()
+
+export const installmentPlanInputSchema = z
+  .object({
+    subcategoryId: idSchema,
+    paymentMethodId: idSchema,
+    description: z.string().trim().max(200),
+    purchaseDate: isoDateSchema,
+    totalCents: centsSchema.refine((v) => v > 0, 'El total tiene que ser mayor a 0'),
+    installmentsCount: z.number().int().min(2).max(120),
+    /** "Voy por la cuota N": se generan sólo las cuotas N..count. 1 = plan nuevo. */
+    startAtInstallment: z.number().int().min(1),
+    /** Mes de la cuota `startAtInstallment`. null = calculado (mes de imputación de la compra). */
+    firstChargeMonthOverride: monthSchema.nullable(),
+    notes: z.string().trim().max(1000).nullable(),
+  })
+  .strict()
+  .refine((v) => v.startAtInstallment <= v.installmentsCount, {
+    path: ['startAtInstallment'],
+    message: 'La cuota actual no puede ser mayor a la cantidad de cuotas',
+  })
+
+export const installmentPlanSchema = z.object({
+  id: idSchema,
+  description: z.string(),
+  subcategoryId: idSchema,
+  categoryId: idSchema,
+  paymentMethodId: idSchema,
+  purchaseDate: isoDateSchema,
+  totalCents: centsSchema,
+  installmentsCount: z.number().int(),
+  firstChargeMonth: monthSchema,
+  /** Cuotas existentes (no borradas). */
+  installments: z.array(
+    z.object({
+      expenseId: idSchema,
+      number: z.number().int(),
+      month: monthSchema,
+      amountCents: centsSchema,
+    }),
+  ),
+})
+
+export const planScopeSchema = z.enum(['all', 'future'])
+
+/** Edición de un plan: la fecha de compra y los meses no se editan (para eso, borrar y volver a cargar). */
+export const installmentPlanUpdateSchema = z
+  .object({
+    subcategoryId: idSchema,
+    paymentMethodId: idSchema,
+    description: z.string().trim().max(200),
+    totalCents: centsSchema.refine((v) => v > 0, 'El total tiene que ser mayor a 0'),
+    installmentsCount: z.number().int().min(2).max(120),
+    notes: z.string().trim().max(1000).nullable(),
+  })
+  .strict()
+
+// ---------- Recurrentes ----------
+
+export const recurringTemplateSchema = z.object({
+  id: idSchema,
+  description: z.string(),
+  subcategoryId: idSchema,
+  categoryId: idSchema,
+  paymentMethodId: idSchema,
+  defaultAmountCents: centsSchema.nullable(),
+  dayOfMonth: z.number().int(),
+  startMonth: monthSchema,
+  endMonth: monthSchema.nullable(),
+  active: z.boolean(),
+})
+
+export const recurringTemplateInputSchema = z
+  .object({
+    description: nameSchema(120),
+    subcategoryId: idSchema,
+    paymentMethodId: idSchema,
+    defaultAmountCents: centsSchema.nullable(),
+    dayOfMonth: dayOfMonthSchema,
+    startMonth: monthSchema,
+    endMonth: monthSchema.nullable(),
+    active: z.boolean(),
+  })
+  .strict()
+  .refine((v) => v.endMonth === null || v.endMonth >= v.startMonth, {
+    path: ['endMonth'],
+    message: 'El mes de fin tiene que ser posterior al de inicio',
+  })
+
+// ---------- Ingresos ----------
+
+export const incomeTypeSchema = z.enum(['sueldo', 'aguinaldo', 'freelance', 'otro'])
+
+export const incomeSchema = z.object({
+  id: idSchema,
+  month: monthSchema,
+  type: incomeTypeSchema,
+  description: z.string(),
+  amountCents: centsSchema,
+  date: isoDateSchema,
+})
+
+export const incomeInputSchema = z
+  .object({
+    month: monthSchema,
+    type: incomeTypeSchema,
+    description: z.string().trim().max(200),
+    amountCents: centsSchema,
+    date: isoDateSchema,
+  })
+  .strict()
+
+// ---------- Ahorros ----------
+
+export const savingsGoalSchema = z.object({
+  id: idSchema,
+  name: z.string(),
+  currency: currencySchema,
+  targetMinor: centsSchema,
+  targetDate: isoDateSchema.nullable(),
+  archived: z.boolean(),
+  savedMinor: signedCentsSchema,
+})
+
+export const savingsGoalInputSchema = z
+  .object({
+    name: nameSchema(80),
+    currency: currencySchema,
+    targetMinor: centsSchema.refine((v) => v > 0, 'El objetivo tiene que ser mayor a 0'),
+    targetDate: isoDateSchema.nullable(),
+  })
+  .strict()
+
+export const savingsMovementSchema = z.object({
+  id: idSchema,
+  date: isoDateSchema,
+  month: monthSchema,
+  currency: currencySchema,
+  amountMinor: signedCentsSchema,
+  arsCostCents: centsSchema.nullable(),
+  rateCentsPerUsd: centsSchema.nullable(),
+  goalId: idSchema.nullable(),
+  note: z.string(),
+})
+
+export const savingsMovementInputSchema = z
+  .object({
+    date: isoDateSchema,
+    /** Mes de imputación para el disponible. Por defecto el de la fecha. */
+    month: monthSchema,
+    currency: currencySchema,
+    kind: z.enum(['aporte', 'retiro']),
+    amountMinor: centsSchema.refine((v) => v > 0, 'El monto tiene que ser mayor a 0'),
+    /** Sólo USD: ARS pagados (aporte) o recibidos (retiro). */
+    arsCents: centsSchema.nullable(),
+    goalId: idSchema.nullable(),
+    note: z.string().trim().max(200),
+  })
+  .strict()
+  .refine((v) => v.currency === 'USD' || v.arsCents === null, {
+    path: ['arsCents'],
+    message: 'Sólo los movimientos en USD llevan monto en pesos',
+  })
+
+// ---------- Resumen del mes ----------
+
+export const monthSummarySchema = z.object({
+  month: monthSchema,
+  incomeCents: signedCentsSchema,
+  spentCents: signedCentsSchema,
+  /** Aportes netos de ahorro que salen del disponible (aportes ARS + ARS usados para comprar USD − retiros). */
+  savedCents: signedCentsSchema,
+  availableCents: signedCentsSchema,
+  pendingCount: z.number().int(),
+  projectedCount: z.number().int(),
+  byCategory: z.array(z.object({ categoryId: idSchema, amountCents: signedCentsSchema })),
+})
