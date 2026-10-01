@@ -14,7 +14,10 @@ export interface BootstrapResult {
  * Abre la base, aplica migraciones pendientes, siembra la primera vez y purga lo borrado hace
  * más de 30 días (el "deshacer" sólo necesita unos segundos; el margen es por seguridad).
  */
-export function bootstrapDatabase(filename: string, beforeMigrate?: (db: Db) => void): BootstrapResult {
+export function bootstrapDatabase(
+  filename: string,
+  beforeMigrate?: (db: Db) => void,
+): BootstrapResult {
   const db = openDatabase(filename)
   try {
     beforeMigrate?.(db)
