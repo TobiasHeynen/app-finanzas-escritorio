@@ -19,12 +19,12 @@
     "format:check": "prettier --check .",
     "test": "node scripts/run-vitest.mjs run",
     "test:watch": "node scripts/run-vitest.mjs",
-    "package": "npm run build && electron-builder --win --x64",
-    "postinstall": "electron-builder install-app-deps"
+    "package": "npm run build && electron-builder --win --x64"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@tailwindcss/vite": "4.3.3",
+    "@types/better-sqlite3": "9.6.0",
     "@types/node": "22.20.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
@@ -49,8 +49,10 @@
   "dependencies": {
     "@fontsource-variable/inter": "5.3.0",
     "@tanstack/react-query": "5.104.0",
+    "better-sqlite3": "13.0.3",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
+    "date-fns": "4.4.0",
     "lucide-react": "1.49.0",
     "radix-ui": "1.6.7",
     "react": "19.3.0",
