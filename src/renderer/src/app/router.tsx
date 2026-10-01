@@ -1,5 +1,6 @@
 import { createHashRouter } from 'react-router'
 import { Layout } from './layout'
+import { AhorrosPage } from '@renderer/features/ahorros/ahorros-page'
 import { ConfiguracionPage } from '@renderer/features/configuracion/configuracion-page'
 import { DashboardPage } from '@renderer/features/dashboard/dashboard-page'
 import { MovimientosPage } from '@renderer/features/movimientos/movimientos-page'
@@ -22,7 +23,7 @@ export const router = createHashRouter([
       { index: true, element: <DashboardPage /> },
       { path: 'movimientos', element: <MovimientosPage /> },
       { path: 'tarjetas', element: <TarjetasPage /> },
-      { path: 'ahorros', element: <Placeholder title="Ahorros" /> },
+      { path: 'ahorros', element: <AhorrosPage /> },
       { path: 'reporte', element: <Placeholder title="Reporte" /> },
       { path: 'configuracion', element: <ConfiguracionPage /> },
     ],
