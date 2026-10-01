@@ -1,4 +1,5 @@
 import { ArrowDownRight, ArrowUpRight, CircleDashed, PiggyBank, Wallet } from 'lucide-react'
+import { formatMoney } from '@shared/money'
 import type { MonthSummary } from '@shared/types'
 import { Money } from '@renderer/components/money'
 import { Card } from '@renderer/components/ui/card'
@@ -40,12 +41,15 @@ function Tile({
   )
 }
 
+/** Montos largos ("$ 1.028.562,33") con una fuente un poco más chica para que entren en la tarjeta. */
+const fit = (cents: number) => (formatMoney(cents).length > 12 ? 'text-xl' : undefined)
+
 export function SummaryCards({ summary }: { summary: MonthSummary }) {
   const available = summary.availableCents
   return (
     <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
       <Tile label="Ingresos" icon={ArrowUpRight} tone="positive" testId="tile-ingresos">
-        <Money cents={summary.incomeCents} />
+        <Money cents={summary.incomeCents} className={fit(summary.incomeCents)} />
       </Tile>
       <Tile
         label="Gastado"
@@ -56,10 +60,10 @@ export function SummaryCards({ summary }: { summary: MonthSummary }) {
           summary.projectedCount > 0 ? `Incluye ${summary.projectedCount} proyectados` : undefined
         }
       >
-        <Money cents={summary.spentCents} />
+        <Money cents={summary.spentCents} className={fit(summary.spentCents)} />
       </Tile>
       <Tile label="Ahorrado" icon={PiggyBank} tone="primary" testId="tile-ahorrado">
-        <Money cents={summary.savedCents} />
+        <Money cents={summary.savedCents} className={fit(summary.savedCents)} />
       </Tile>
       <Tile
         label="Disponible"
@@ -71,7 +75,7 @@ export function SummaryCards({ summary }: { summary: MonthSummary }) {
         <Money
           cents={available}
 
-          className={available >= 0 ? 'text-positive' : 'text-negative'}
+          className={cn(available >= 0 ? 'text-positive' : 'text-negative', fit(available))}
         />
       </Tile>
       <Tile
