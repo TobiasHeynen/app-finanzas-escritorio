@@ -11,6 +11,8 @@ interface ExpenseDialogApi {
   openNew: (defaults?: ExpenseDefaults) => void
   /** Edita un gasto; si es una cuota, abre la edición del plan. */
   openEdit: (expense: Expense) => void
+  /** Abre la edición de un plan de cuotas. */
+  openPlan: (planId: number) => void
 }
 
 const Ctx = createContext<ExpenseDialogApi | null>(null)
@@ -49,7 +51,7 @@ export function ExpenseDialogProvider({ children }: { children: React.ReactNode 
     return () => window.removeEventListener('keydown', onKey)
   }, [openNew])
 
-  const api = useMemo(() => ({ openNew, openEdit }), [openNew, openEdit])
+  const api = useMemo(() => ({ openNew, openEdit, openPlan: setPlanId }), [openNew, openEdit])
 
   return (
     <Ctx.Provider value={api}>

@@ -3,6 +3,7 @@ import { Layout } from './layout'
 import { ConfiguracionPage } from '@renderer/features/configuracion/configuracion-page'
 import { DashboardPage } from '@renderer/features/dashboard/dashboard-page'
 import { MovimientosPage } from '@renderer/features/movimientos/movimientos-page'
+import { TarjetasPage } from '@renderer/features/tarjetas/tarjetas-page'
 import { Page, PageHeader } from '@renderer/components/page'
 
 function Placeholder({ title }: { title: string }) {
@@ -20,7 +21,7 @@ export const router = createHashRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'movimientos', element: <MovimientosPage /> },
-      { path: 'tarjetas', element: <Placeholder title="Tarjetas" /> },
+      { path: 'tarjetas', element: <TarjetasPage /> },
       { path: 'ahorros', element: <Placeholder title="Ahorros" /> },
       { path: 'reporte', element: <Placeholder title="Reporte" /> },
       { path: 'configuracion', element: <ConfiguracionPage /> },
