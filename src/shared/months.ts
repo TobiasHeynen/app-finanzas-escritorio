@@ -32,7 +32,7 @@ export function parseMonth(month: Month): { year: number; month: number } {
 }
 
 export function parseDate(date: IsoDate): { year: number; month: number; day: number } {
-  if (!isIsoDate(date)) throw new RangeError(`Fecha inválida: ${date}`)
+  if (!isIsoDate(date)) throw new RangeError(`Fecha inválida: ${String(date)}`)
   return {
     year: Number(date.slice(0, 4)),
     month: Number(date.slice(5, 7)),

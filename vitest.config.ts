@@ -10,6 +10,7 @@ export default defineConfig({
   },
   test: {
     include: ['tests/unit/**/*.test.ts'],
+    setupFiles: [],
     environment: 'node',
     // Vitest corre adentro del Node de Electron (ver scripts/run-vitest.mjs): un solo ABI nativo.
     pool: 'forks',

@@ -1,7 +1,8 @@
 import { app } from 'electron'
+import type { Services } from '../services'
 import type { IpcHandlers } from './dispatch'
 
-export function createHandlers(): IpcHandlers {
+export function createHandlers(_services: Services): IpcHandlers {
   return {
     'app:ping': ({ message }) => ({
       reply: `pong: ${message}`,

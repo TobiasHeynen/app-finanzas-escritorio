@@ -14,6 +14,10 @@ export default tseslint.config(
       parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
     rules: {
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrorsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
       // Dinero en enteros: parsear números decimales sólo en src/shared/money.ts.
@@ -53,6 +57,10 @@ export default tseslint.config(
       'tests/**/*.ts',
     ],
     languageOptions: { globals: globals.node },
+  },
+  {
+    files: ['tests/**/*.ts'],
+    rules: { '@typescript-eslint/no-non-null-assertion': 'off' },
   },
   {
     files: ['**/*.mjs'],

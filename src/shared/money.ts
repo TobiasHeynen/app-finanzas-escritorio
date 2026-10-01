@@ -16,7 +16,8 @@ export function isCents(value: unknown): value is Cents {
 }
 
 export function assertCents(value: number, label = 'monto'): Cents {
-  if (!isCents(value)) throw new RangeError(`${label} inválido: ${value} (tiene que ser un entero)`)
+  if (!isCents(value))
+    throw new RangeError(`${label} inválido: ${String(value)} (tiene que ser un entero)`)
   return value
 }
 
@@ -113,9 +114,7 @@ export function formatMoney(
   const signDisplay = options.showPlus ? 'exceptZero' : 'auto'
   const value = withDecimals ? centsToDecimalString(cents) : String(roundToUnits(cents))
   // Intl acepta strings decimales y los formatea sin convertirlos a float.
-  return formatter(currency, withDecimals, signDisplay).format(
-    value as unknown as number,
-  )
+  return formatter(currency, withDecimals, signDisplay).format(value as unknown as number)
 }
 
 /** Formato para precargar un input editable: "1.234,56" (sin símbolo). Pendiente → "". */
