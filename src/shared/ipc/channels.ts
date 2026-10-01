@@ -40,6 +40,7 @@ export const IPC_CHANNELS = [
   'incomes:remove',
   'incomes:restore',
   'incomes:copyPreviousSalary',
+  'cards:overview',
 ] as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[number]

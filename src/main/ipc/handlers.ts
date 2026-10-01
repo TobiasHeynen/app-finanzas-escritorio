@@ -89,5 +89,8 @@ export function createHandlers(services: Services): IpcHandlers {
       return ok
     },
     'incomes:copyPreviousSalary': ({ month }) => services.incomes.copyPreviousSalary(month),
+
+    // Tarjetas
+    'cards:overview': () => services.cards.overview(),
   }
 }

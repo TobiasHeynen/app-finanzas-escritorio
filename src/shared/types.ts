@@ -25,6 +25,9 @@ export type SavingsGoalInput = z.infer<typeof s.savingsGoalInputSchema>
 export type SavingsMovement = z.infer<typeof s.savingsMovementSchema>
 export type SavingsMovementInput = z.infer<typeof s.savingsMovementInputSchema>
 export type MonthSummary = z.infer<typeof s.monthSummarySchema>
+export type PlanProgress = z.infer<typeof s.planProgressSchema>
+export type CardOverview = z.infer<typeof s.cardOverviewSchema>
+export type CardsOverview = z.infer<typeof s.cardsOverviewSchema>
 
 export const PAYMENT_METHOD_TYPE_LABELS: Record<PaymentMethodType, string> = {
   efectivo: 'Efectivo',

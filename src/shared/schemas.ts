@@ -297,3 +297,51 @@ export const monthSummarySchema = z.object({
   projectedCount: z.number().int(),
   byCategory: z.array(z.object({ categoryId: idSchema, amountCents: signedCentsSchema })),
 })
+
+// ---------- Tarjetas ----------
+
+export const planProgressSchema = z.object({
+  planId: idSchema,
+  description: z.string(),
+  subcategoryId: idSchema,
+  categoryId: idSchema,
+  installmentsCount: z.number().int(),
+  /** Cuotas con mes <= actual (incluye las anteriores a "voy por la cuota N"). */
+  paidCount: z.number().int(),
+  nextAmountCents: centsSchema.nullable(),
+  /** Suma de las cuotas de meses posteriores al actual. */
+  remainingCents: centsSchema,
+  lastMonth: monthSchema,
+})
+
+export const cardOverviewSchema = z.object({
+  paymentMethodId: idSchema,
+  dueThisMonth: z.object({
+    month: monthSchema,
+    dueDate: isoDateSchema.nullable(),
+    totalCents: centsSchema,
+    count: z.number().int(),
+    pendingCount: z.number().int(),
+  }),
+  openStatement: z.object({
+    chargeMonth: monthSchema,
+    closingDate: isoDateSchema,
+    totalCents: centsSchema,
+    count: z.number().int(),
+  }),
+  plans: z.array(planProgressSchema),
+  committedCents: centsSchema,
+})
+
+export const cardsOverviewSchema = z.object({
+  currentMonth: monthSchema,
+  cards: z.array(cardOverviewSchema),
+  committedByMonth: z.array(
+    z.object({
+      month: monthSchema,
+      totalCents: centsSchema,
+      byCard: z.array(z.object({ paymentMethodId: idSchema, totalCents: centsSchema })),
+    }),
+  ),
+  committedTotalCents: centsSchema,
+})

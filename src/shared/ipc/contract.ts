@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { IpcChannel } from './channels'
 import {
+  cardsOverviewSchema,
   categoryInputSchema,
   categorySchema,
   centsSchema,
@@ -160,6 +161,9 @@ export const ipcContract = {
     input: z.object({ month: monthSchema }).strict(),
     output: incomeSchema.nullable(),
   },
+
+  // ---------- Tarjetas ----------
+  'cards:overview': { input: empty, output: cardsOverviewSchema },
 } as const satisfies Record<IpcChannel, { input: z.ZodType; output: z.ZodType }>
 
 export type IpcContract = typeof ipcContract
