@@ -9,7 +9,10 @@ const HORIZON_MONTHS = 12
  * (el que se está acumulando), las cuotas activas y lo comprometido a futuro.
  */
 export function createCardsService({ db, clock }: ServiceContext) {
-  const totals = db.prepare<[number, string, string], { charge_month: string; total: number; n: number; pending: number }>(
+  const totals = db.prepare<
+    [number, string, string],
+    { charge_month: string; total: number; n: number; pending: number }
+  >(
     `SELECT charge_month, COALESCE(SUM(amount_cents), 0) AS total, COUNT(*) AS n,
             SUM(CASE WHEN amount_cents IS NULL THEN 1 ELSE 0 END) AS pending
      FROM expenses
@@ -48,7 +51,10 @@ export function createCardsService({ db, clock }: ServiceContext) {
      HAVING MAX(e.charge_month) >= @month
      ORDER BY MAX(e.charge_month), p.id`,
   )
-  const methods = db.prepare<[], { id: number; closing_day: number; due_day: number | null; archived_at: string | null }>(
+  const methods = db.prepare<
+    [],
+    { id: number; closing_day: number; due_day: number | null; archived_at: string | null }
+  >(
     `SELECT id, closing_day, due_day, archived_at FROM payment_methods WHERE type = 'tarjeta_credito' ORDER BY sort_order, id`,
   )
 

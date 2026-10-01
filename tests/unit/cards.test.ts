@@ -40,7 +40,11 @@ describe('pantalla de tarjetas', () => {
     expect(card.openStatement.totalCents).toBe(20000 + 10000)
     expect(card.committedCents).toBe(20000 + 40000 + 30000)
     expect(card.plans).toHaveLength(1)
-    expect(card.plans[0]).toMatchObject({ paidCount: 0, installmentsCount: 3, remainingCents: 30000 })
+    expect(card.plans[0]).toMatchObject({
+      paidCount: 0,
+      installmentsCount: 3,
+      remainingCents: 30000,
+    })
 
     const nov = overview.committedByMonth.find((m) => m.month === '2026-11')!
     expect(nov.totalCents).toBe(30000)
@@ -68,6 +72,10 @@ describe('pantalla de tarjetas', () => {
       notes: null,
     })
     const card = cards.overview().cards.find((c) => c.paymentMethodId === ids.method('MASTERCARD'))!
-    expect(card.plans[0]).toMatchObject({ paidCount: 7, nextAmountCents: 10000, remainingCents: 50000 })
+    expect(card.plans[0]).toMatchObject({
+      paidCount: 7,
+      nextAmountCents: 10000,
+      remainingCents: 50000,
+    })
   })
 })

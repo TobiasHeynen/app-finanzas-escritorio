@@ -92,5 +92,21 @@ export function createHandlers(services: Services): IpcHandlers {
 
     // Tarjetas
     'cards:overview': () => services.cards.overview(),
+
+    // Ahorros
+    'savings:overview': () => services.savings.overview(),
+    'savings:createMovement': (input) => services.savings.createMovement(input),
+    'savings:updateMovement': ({ id, data }) => services.savings.updateMovement(id, data),
+    'savings:removeMovement': ({ id }) => {
+      services.savings.removeMovement(id)
+      return ok
+    },
+    'savings:restoreMovement': ({ id }) => {
+      services.savings.restoreMovement(id)
+      return ok
+    },
+    'savings:createGoal': (input) => repos.savings.insertGoal(input),
+    'savings:updateGoal': ({ id, data }) => services.savings.updateGoal(id, data),
+    'savings:archiveGoal': ({ id, archived }) => repos.savings.setGoalArchived(id, archived),
   }
 }

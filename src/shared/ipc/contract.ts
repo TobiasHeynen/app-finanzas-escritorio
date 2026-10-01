@@ -21,6 +21,11 @@ import {
   projectedExpenseSchema,
   recurringTemplateInputSchema,
   recurringTemplateSchema,
+  savingsGoalInputSchema,
+  savingsGoalSchema,
+  savingsMovementInputSchema,
+  savingsMovementSchema,
+  savingsOverviewSchema,
   subcategorySchema,
 } from '../schemas'
 
@@ -164,6 +169,22 @@ export const ipcContract = {
 
   // ---------- Tarjetas ----------
   'cards:overview': { input: empty, output: cardsOverviewSchema },
+
+  // ---------- Ahorros ----------
+  'savings:overview': { input: empty, output: savingsOverviewSchema },
+  'savings:createMovement': { input: savingsMovementInputSchema, output: savingsMovementSchema },
+  'savings:updateMovement': {
+    input: z.object({ id: idSchema, data: savingsMovementInputSchema }).strict(),
+    output: savingsMovementSchema,
+  },
+  'savings:removeMovement': { input: idInput, output: ok },
+  'savings:restoreMovement': { input: idInput, output: ok },
+  'savings:createGoal': { input: savingsGoalInputSchema, output: savingsGoalSchema },
+  'savings:updateGoal': {
+    input: z.object({ id: idSchema, data: savingsGoalInputSchema }).strict(),
+    output: savingsGoalSchema,
+  },
+  'savings:archiveGoal': { input: archiveInput, output: savingsGoalSchema },
 } as const satisfies Record<IpcChannel, { input: z.ZodType; output: z.ZodType }>
 
 export type IpcContract = typeof ipcContract

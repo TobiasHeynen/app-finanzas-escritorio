@@ -3,6 +3,7 @@ import { createCardsService } from './cards'
 import { createExpensesService } from './expenses'
 import { createIncomesService } from './incomes'
 import { createRecurringService } from './recurring'
+import { createSavingsService } from './savings'
 import { createSummaryService } from './summary'
 
 export function createServices(ctx: ServiceContext) {
@@ -13,6 +14,7 @@ export function createServices(ctx: ServiceContext) {
     incomes: createIncomesService(ctx),
     cards: createCardsService(ctx),
     recurring,
+    savings: createSavingsService(ctx),
     summary: createSummaryService(ctx, recurring),
   }
 }

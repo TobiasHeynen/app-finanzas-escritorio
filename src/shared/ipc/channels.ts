@@ -41,6 +41,14 @@ export const IPC_CHANNELS = [
   'incomes:restore',
   'incomes:copyPreviousSalary',
   'cards:overview',
+  'savings:overview',
+  'savings:createMovement',
+  'savings:updateMovement',
+  'savings:removeMovement',
+  'savings:restoreMovement',
+  'savings:createGoal',
+  'savings:updateGoal',
+  'savings:archiveGoal',
 ] as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[number]

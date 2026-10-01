@@ -284,6 +284,25 @@ export const savingsMovementInputSchema = z
     message: 'Sólo los movimientos en USD llevan monto en pesos',
   })
 
+export const goalProgressSchema = savingsGoalSchema.extend({
+  /** Lo que falta para el objetivo (0 si ya se llegó). */
+  remainingMinor: centsSchema,
+  /** Meses para aportar, contando el actual, hasta el mes de la fecha objetivo. null sin fecha. */
+  monthsLeft: z.number().int().nullable(),
+  /** Cuánto aportar por mes para llegar a tiempo. null sin fecha, vencida o cumplida. */
+  perMonthMinor: centsSchema.nullable(),
+  overdue: z.boolean(),
+})
+
+export const savingsOverviewSchema = z.object({
+  balances: z.object({ ARS: signedCentsSchema, USD: signedCentsSchema }),
+  lastRate: z.object({ rateCentsPerUsd: centsSchema, date: isoDateSchema }).nullable(),
+  /** Saldo USD valuado a la última cotización cargada. null si no hay cotización. */
+  usdInArsCents: signedCentsSchema.nullable(),
+  movements: z.array(savingsMovementSchema),
+  goals: z.array(goalProgressSchema),
+})
+
 // ---------- Resumen del mes ----------
 
 export const monthSummarySchema = z.object({
