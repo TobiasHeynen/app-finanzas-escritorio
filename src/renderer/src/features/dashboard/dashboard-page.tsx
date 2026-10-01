@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router'
 import { Plus, Receipt, Search, X } from 'lucide-react'
 import { currentMonth, isMonth, monthOf, todayIso } from '@shared/months'
+import { ExportMenu } from '@renderer/components/export-menu'
 import { MonthStepper } from '@renderer/components/month-stepper'
 import { EmptyState, Page } from '@renderer/components/page'
 import { PaymentMethodIcon } from '@renderer/components/payment-method-icon'
@@ -71,11 +72,14 @@ export function DashboardPage() {
     <Page>
       <header className="flex flex-wrap items-center justify-between gap-4">
         <MonthStepper value={month} onChange={setMonth} size="lg" />
-        {!isCurrent && (
-          <Button variant="ghost" size="sm" onClick={() => setMonth(monthOf(todayIso()))}>
-            Ir al mes actual
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {!isCurrent && (
+            <Button variant="ghost" size="sm" onClick={() => setMonth(monthOf(todayIso()))}>
+              Ir al mes actual
+            </Button>
+          )}
+          <ExportMenu scope="month" period={month} />
+        </div>
       </header>
 
       {isLoading || !data ? <Skeleton className="h-28" /> : <SummaryCards summary={data.summary} />}
