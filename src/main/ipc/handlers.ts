@@ -1,4 +1,5 @@
 import { app } from 'electron'
+import { createBackupActions } from '../backups'
 import { exportToFile, revealLastExport } from '../export-file'
 import { dbPath } from '../paths'
 import type { Services } from '../services'
@@ -8,6 +9,7 @@ const ok = { ok: true } as const
 
 export function createHandlers(services: Services): IpcHandlers {
   const { repos, clock } = services.ctx
+  const backups = createBackupActions(services.ctx.db)
   return {
     'app:ping': ({ message }) => ({
       reply: `pong: ${message}`,
@@ -117,5 +119,15 @@ export function createHandlers(services: Services): IpcHandlers {
       revealLastExport()
       return ok
     },
+
+    // Backups
+    'backups:list': () => backups.list(),
+    'backups:create': () => backups.create(),
+    'backups:openFolder': async () => {
+      await backups.openFolder()
+      return ok
+    },
+    'backups:restore': ({ name }) => backups.restore(name),
+    'backups:restoreFromFile': () => backups.restoreFromFile(),
   }
 }

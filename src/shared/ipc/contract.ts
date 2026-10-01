@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import type { IpcChannel } from './channels'
 import {
+  backupInfoSchema,
   cardsOverviewSchema,
   categoryInputSchema,
   categorySchema,
@@ -196,6 +197,16 @@ export const ipcContract = {
   },
   'export:run': { input: exportRequestSchema, output: exportResultSchema },
   'export:reveal': { input: empty, output: ok },
+
+  // ---------- Backups ----------
+  'backups:list': { input: empty, output: z.array(backupInfoSchema) },
+  'backups:create': { input: empty, output: backupInfoSchema },
+  'backups:openFolder': { input: empty, output: ok },
+  'backups:restore': {
+    input: z.object({ name: z.string().max(100) }).strict(),
+    output: z.object({ restarting: z.boolean() }),
+  },
+  'backups:restoreFromFile': { input: empty, output: z.object({ restarting: z.boolean() }) },
 } as const satisfies Record<IpcChannel, { input: z.ZodType; output: z.ZodType }>
 
 export type IpcContract = typeof ipcContract

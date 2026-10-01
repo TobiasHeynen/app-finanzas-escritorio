@@ -48,3 +48,4 @@ export type ReportRow = z.infer<typeof s.reportRowSchema>
 export type YearReport = z.infer<typeof s.yearReportSchema>
 export type ExportRequest = z.infer<typeof s.exportRequestSchema>
 export type ExportResult = z.infer<typeof s.exportResultSchema>
+export type BackupInfo = z.infer<typeof s.backupInfoSchema>

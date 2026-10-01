@@ -415,3 +415,12 @@ export const exportResultSchema = z.object({
   saved: z.boolean(),
   path: z.string().nullable(),
 })
+
+// ---------- Backups ----------
+
+export const backupInfoSchema = z.object({
+  name: z.string(),
+  reason: z.enum(['inicio', 'manual', 'pre-migracion', 'pre-restauracion']),
+  createdAt: z.string(),
+  sizeBytes: z.number().int(),
+})

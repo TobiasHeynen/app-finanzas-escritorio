@@ -8,7 +8,9 @@ import { applySecurityPolicies } from './security'
 import { createMainWindow } from './window'
 import { registerIpcHandlers } from './ipc/register'
 import { createHandlers } from './ipc/handlers'
-import { dbPath } from './paths'
+import { backupsDir, dbPath } from './paths'
+import { backupBeforeMigrations } from './backups'
+import { createBackup } from './db/backup'
 
 // Locale de Chromium en es-AR: inputs de fecha dd/mm/aaaa y textos nativos en español.
 app.commandLine.appendSwitch('lang', 'es-AR')
@@ -16,11 +18,18 @@ app.commandLine.appendSwitch('lang', 'es-AR')
 let mainWindow: BrowserWindow | null = null
 let services: Services | null = null
 
-function startServices(): Services {
-  const { db } = bootstrapDatabase(dbPath())
+async function startServices(): Promise<Services> {
+  await backupBeforeMigrations()
+  const { db, seeded } = bootstrapDatabase(dbPath())
   const ctx = { db, repos: createRepos(db), clock: systemClock }
   const created = createServices(ctx)
   created.recurring.generateDue()
+  // Backup de cada inicio (no bloquea la ventana). Una base recién creada no hace falta.
+  if (!seeded) {
+    createBackup(db, backupsDir(), 'inicio').catch((err: unknown) => {
+      console.error('No se pudo hacer el backup de inicio', err)
+    })
+  }
   return created
 }
 
@@ -33,12 +42,12 @@ if (!app.requestSingleInstanceLock()) {
     mainWindow.focus()
   })
 
-  void app.whenReady().then(() => {
+  void app.whenReady().then(async () => {
     app.setAppUserModelId('ar.tobiasheynen.misfinanzas')
     if (app.isPackaged) Menu.setApplicationMenu(null)
 
     try {
-      services = startServices()
+      services = await startServices()
     } catch (err) {
       const detail =
         err instanceof SchemaTooNewError

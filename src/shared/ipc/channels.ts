@@ -52,6 +52,11 @@ export const IPC_CHANNELS = [
   'report:year',
   'export:run',
   'export:reveal',
+  'backups:list',
+  'backups:create',
+  'backups:openFolder',
+  'backups:restore',
+  'backups:restoreFromFile',
 ] as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[number]
