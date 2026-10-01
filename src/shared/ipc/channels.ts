@@ -49,6 +49,9 @@ export const IPC_CHANNELS = [
   'savings:createGoal',
   'savings:updateGoal',
   'savings:archiveGoal',
+  'report:year',
+  'export:run',
+  'export:reveal',
 ] as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[number]

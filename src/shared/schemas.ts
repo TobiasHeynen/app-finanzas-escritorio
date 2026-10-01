@@ -364,3 +364,54 @@ export const cardsOverviewSchema = z.object({
   ),
   committedTotalCents: centsSchema,
 })
+
+// ---------- Reporte anual ----------
+
+const twelve = z.array(signedCentsSchema).length(12)
+
+export const reportRowSchema = z.object({
+  byMonth: twelve,
+  totalCents: signedCentsSchema,
+  /** Total / meses con movimientos del año (ver monthsWithData). */
+  averageCents: signedCentsSchema,
+})
+
+export const yearReportSchema = z.object({
+  year: z.number().int(),
+  months: z.array(monthSchema).length(12),
+  /** Primer mes del año que es futuro (incluye recurrentes proyectados). null si no hay. */
+  projectedFrom: monthSchema.nullable(),
+  monthsWithData: z.number().int(),
+  income: reportRowSchema,
+  spent: reportRowSchema,
+  saved: reportRowSchema,
+  available: reportRowSchema,
+  pendingCount: z.number().int(),
+  categories: z.array(
+    reportRowSchema.extend({
+      categoryId: idSchema,
+      subcategories: z.array(reportRowSchema.extend({ subcategoryId: idSchema })),
+    }),
+  ),
+  availableYears: z.array(z.number().int()),
+})
+
+// ---------- Exportación ----------
+
+export const exportRequestSchema = z
+  .object({
+    scope: z.enum(['month', 'year']),
+    /** 'YYYY-MM' para un mes, 'YYYY' para un año. */
+    period: z.string().regex(/^\d{4}(-(0[1-9]|1[0-2]))?$/, 'Período inválido'),
+    format: z.enum(['xlsx', 'csv']),
+  })
+  .strict()
+  .refine((v) => (v.scope === 'month') === (v.period.length === 7), {
+    path: ['period'],
+    message: 'El período no coincide con el alcance',
+  })
+
+export const exportResultSchema = z.object({
+  saved: z.boolean(),
+  path: z.string().nullable(),
+})

@@ -6,6 +6,8 @@ import {
   categorySchema,
   centsSchema,
   expenseInputSchema,
+  exportRequestSchema,
+  exportResultSchema,
   expenseSchema,
   idSchema,
   incomeInputSchema,
@@ -27,6 +29,7 @@ import {
   savingsMovementSchema,
   savingsOverviewSchema,
   subcategorySchema,
+  yearReportSchema,
 } from '../schemas'
 
 const empty = z.object({}).strict()
@@ -185,6 +188,14 @@ export const ipcContract = {
     output: savingsGoalSchema,
   },
   'savings:archiveGoal': { input: archiveInput, output: savingsGoalSchema },
+
+  // ---------- Reporte y exportación ----------
+  'report:year': {
+    input: z.object({ year: z.number().int().min(2000).max(2100) }).strict(),
+    output: yearReportSchema,
+  },
+  'export:run': { input: exportRequestSchema, output: exportResultSchema },
+  'export:reveal': { input: empty, output: ok },
 } as const satisfies Record<IpcChannel, { input: z.ZodType; output: z.ZodType }>
 
 export type IpcContract = typeof ipcContract

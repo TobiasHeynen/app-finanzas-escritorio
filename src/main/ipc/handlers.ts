@@ -1,4 +1,5 @@
 import { app } from 'electron'
+import { exportToFile, revealLastExport } from '../export-file'
 import { dbPath } from '../paths'
 import type { Services } from '../services'
 import type { IpcHandlers } from './dispatch'
@@ -108,5 +109,13 @@ export function createHandlers(services: Services): IpcHandlers {
     'savings:createGoal': (input) => repos.savings.insertGoal(input),
     'savings:updateGoal': ({ id, data }) => services.savings.updateGoal(id, data),
     'savings:archiveGoal': ({ id, archived }) => repos.savings.setGoalArchived(id, archived),
+
+    // Reporte y exportación
+    'report:year': ({ year }) => services.report.year(year),
+    'export:run': (req) => exportToFile(services.exporter, req),
+    'export:reveal': () => {
+      revealLastExport()
+      return ok
+    },
   }
 }
