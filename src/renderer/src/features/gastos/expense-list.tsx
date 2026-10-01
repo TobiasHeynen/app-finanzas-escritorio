@@ -50,31 +50,33 @@ export function ExpenseList({
 
   return (
     <div className="flex flex-col gap-4">
-      {[...groups].map(([date, list]) => (
-        <section key={date} className="flex flex-col gap-1">
-          <header className="flex items-center justify-between px-3 text-xs font-medium text-muted-foreground uppercase">
-            <span>{formatDayHeading(date)}</span>
-            <Money
-              cents={sumCents(
-                list.map((i) =>
-                  i.kind === 'expense' ? i.expense.amountCents : i.item.amountCents,
-                ),
-              )}
-            />
-          </header>
-          {list.map((i) =>
-            i.kind === 'expense' ? (
-              <ExpenseRow
-                key={`e${i.expense.id}`}
-                expense={i.expense}
-                showChargeMonth={showChargeMonth}
-              />
-            ) : (
-              <ProjectedRow key={`p${i.item.templateId}`} item={i.item} />
-            ),
-          )}
-        </section>
-      ))}
+      {[...groups].map(([date, list]) => {
+        const amounts = list.map((i) =>
+          i.kind === 'expense' ? i.expense.amountCents : i.item.amountCents,
+        )
+        return (
+          <section key={date} className="flex flex-col gap-1">
+            <header className="flex items-center justify-between px-3 text-xs font-medium text-muted-foreground uppercase">
+              <span>
+                {date === EARLIER ? 'Comprado antes · tarjeta y cuotas' : formatDayHeading(date)}
+              </span>
+              {/* Sin subtotal si todo el grupo está pendiente: "$ 0" confunde. */}
+              {amounts.some((a) => a !== null) && <Money cents={sumCents(amounts)} />}
+            </header>
+            {list.map((i) =>
+              i.kind === 'expense' ? (
+                <ExpenseRow
+                  key={`e${i.expense.id}`}
+                  expense={i.expense}
+                  showChargeMonth={showChargeMonth}
+                />
+              ) : (
+                <ProjectedRow key={`p${i.item.templateId}`} item={i.item} />
+              ),
+            )}
+          </section>
+        )
+      })}
     </div>
   )
 }

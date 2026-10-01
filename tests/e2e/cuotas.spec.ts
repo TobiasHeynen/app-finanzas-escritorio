@@ -29,4 +29,11 @@ test('cargar una compra en cuotas con tarjeta y verla en Tarjetas', async ({ pag
   await expect(visa.getByText('Heladera')).toBeVisible()
   await expect(visa.getByText('0 de 12')).toBeVisible()
   await expect(visa).toContainText('Comprometido: $ 120.000')
+
+  // Dos meses adelante ya hay una cuota de una compra de antes: va en su propio grupo.
+  await page.getByRole('link', { name: 'Inicio' }).click()
+  await page.getByRole('button', { name: 'Mes siguiente' }).first().click()
+  await page.getByRole('button', { name: 'Mes siguiente' }).first().click()
+  await expect(page.getByText('Comprado antes · tarjeta y cuotas')).toBeVisible()
+  await expect(page.getByText('Heladera').first()).toBeVisible()
 })

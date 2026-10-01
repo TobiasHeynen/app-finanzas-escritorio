@@ -105,9 +105,7 @@ export function CategoryDonut({
             >
               <CategoryIcon icon={d.icon} color={d.color} size="sm" />
               <span className="flex-1 truncate text-left">{d.name}</span>
-              <span className="text-xs text-muted-foreground tabular-nums">
-                {percents[i]}%
-              </span>
+              <span className="text-xs text-muted-foreground tabular-nums">{percents[i]}%</span>
               <Money cents={d.value} decimals="never" className="w-24 text-right" />
             </button>
           </li>

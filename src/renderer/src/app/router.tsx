@@ -1,5 +1,6 @@
 import { createHashRouter } from 'react-router'
 import { Layout } from './layout'
+import { RouteError } from './route-error'
 import { AhorrosPage } from '@renderer/features/ahorros/ahorros-page'
 import { ConfiguracionPage } from '@renderer/features/configuracion/configuracion-page'
 import { DashboardPage } from '@renderer/features/dashboard/dashboard-page'
@@ -11,6 +12,7 @@ import { TarjetasPage } from '@renderer/features/tarjetas/tarjetas-page'
 export const router = createHashRouter([
   {
     element: <Layout />,
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'movimientos', element: <MovimientosPage /> },
