@@ -7,6 +7,12 @@ files:
   - out/**
   - package.json
   - '!**/*.map'
+  # Sólo lo que usa main en runtime: fuera los bundles de browser de exceljs, el código fuente de
+  # SQLite y los binarios de otras plataformas.
+  - '!**/node_modules/exceljs/dist/**'
+  - '!**/node_modules/better-sqlite3/{deps,src}/**'
+  - '!**/node_modules/better-sqlite3/prebuilds/{darwin,linux,linuxmusl}-*.node'
+  - '!**/node_modules/**/{test,tests,docs,*.md,*.d.ts,*.d.mts,*.d.cts}'
 asarUnpack:
   - '**/*.node'
 win:
@@ -14,6 +20,7 @@ win:
     - target: nsis
       arch: [x64]
   executableName: mis-finanzas
+  icon: build/icon.ico
 nsis:
   oneClick: false
   perMachine: false
@@ -21,5 +28,10 @@ nsis:
   createDesktopShortcut: always
   shortcutName: Mis Finanzas
   artifactName: mis-finanzas-setup-${version}.${ext}
+  installerIcon: build/icon.ico
+  uninstallerIcon: build/icon.ico
+  uninstallDisplayName: Mis Finanzas
+  # Desinstalar NO borra los datos (userData con la base y los backups).
+  deleteAppDataOnUninstall: false
 # better-sqlite3 13 es N-API y trae prebuilds (win32-x64 incluido): no hace falta recompilar.
 npmRebuild: false
