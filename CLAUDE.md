@@ -5,8 +5,8 @@ cuotas proyectadas, gastos recurrentes, tarjetas de crédito (el gasto cuenta en
 resumen), ahorro en ARS y USD con metas, reporte anual y exportación a Excel/CSV.
 100% local: sin cuentas, sin login, sin backend remoto. UI en español rioplatense, formato es-AR.
 
-Plan y decisiones aprobadas: ver "Decisiones de producto" abajo. Se trabaja por fases (0 a 8); al cerrar
-cada una se corre lint + typecheck + tests y se espera el OK de Tobias antes de seguir.
+Plan y decisiones aprobadas: ver "Decisiones de producto" abajo. Las fases 0 a 8 del plan original están
+terminadas; los cambios nuevos van con lint + typecheck + tests (y e2e si tocan flujos de UI).
 
 ## Comandos
 
@@ -17,10 +17,11 @@ cada una se corre lint + typecheck + tests y se espera el OK de Tobias antes de 
 | `npm run preview`                 | Corre el build de producción                                        |
 | `npm test`                        | Tests unitarios (Vitest **dentro del Node de Electron**, ver abajo) |
 | `npm run test:watch`              | Tests en modo watch                                                 |
+| `npm run test:e2e`                | Build + E2E con Playwright sobre la app Electron (en Linux: xvfb)   |
 | `npm run typecheck`               | `tsc` sobre main/preload/shared y renderer                          |
 | `npm run lint`                    | ESLint (typescript-eslint strict type-checked)                      |
 | `npm run format` / `format:check` | Prettier (con orden de clases de Tailwind)                          |
-| `npm run package`                 | Build + instalador NSIS para Windows x64 en `release/`              |
+| `npm run package`                 | Build + instalador NSIS para Windows x64 en `release/` (en Windows) |
 
 Antes de commitear: `npm run lint && npm run typecheck && npm test`.
 
@@ -31,7 +32,7 @@ Tailwind v4 + shadcn/ui (new-york) + lucide-react + Recharts. Datos en el render
 Persistencia SQLite con better-sqlite3 sólo en main. zod 4 en todos los payloads IPC. date-fns (locale es).
 exceljs para xlsx. Vitest + Playwright (e2e). ESLint + Prettier.
 
-Dependencias aprobadas además del stack: react-router, react-hook-form + @hookform/resolvers, sonner,
+Dependencias aprobadas además del stack: react-router, react-hook-form + @hookform/resolvers (hoy sin uso), sonner,
 @fontsource-variable/inter, y las de shadcn (radix-ui, class-variance-authority, clsx, tailwind-merge,
 tw-animate-css, cmdk). **No agregar otras dependencias sin preguntar.**
 
@@ -50,9 +51,13 @@ src/
 │  │  ├─ dispatch.ts      valida con zod → handler → IpcResult (puro, testeable)
 │  │  ├─ register.ts      ipcMain.handle por canal + chequeo del frame emisor
 │  │  └─ handlers.ts      mapa canal → handler (llama a services)
-│  ├─ db/                 connection, migrations/NNN_*.sql, migrate, seed   (Fase 1)
-│  ├─ repositories/       SQL plano con better-sqlite3                     (Fase 1)
-│  └─ services/           reglas de negocio                                (Fase 1+)
+│  ├─ backups.ts          backup antes de migrar, acciones de backup/restaurar (diálogos, relaunch)
+│  ├─ export-file.ts      diálogo "Guardar como" y escritura del xlsx/csv
+│  ├─ db/                 connection, migrations/NNN_*.sql, migrate, seed, bootstrap,
+│  │                      backup.ts (API de backup de SQLite, rotación, validación de archivos)
+│  ├─ repositories/       SQL plano con better-sqlite3
+│  └─ services/           reglas de negocio: expenses, recurring, incomes, summary, cards,
+│                         savings, report, export (exceljs)
 ├─ preload/index.ts       contextBridge: expone sólo window.api.invoke
 ├─ shared/                código común main/renderer
 │  ├─ ipc/channels.ts     lista blanca de canales (SIN zod: lo usa el preload)
@@ -60,16 +65,20 @@ src/
 │  ├─ ipc/api.ts          tipo de window.api
 │  ├─ ipc/result.ts       IpcResult<T> = { ok: true, data } | { ok: false, error }
 │  ├─ errors.ts           AppError(code, message, fields?)
-│  ├─ money.ts            (Fase 1)
-│  └─ months.ts           (Fase 1)
+│  ├─ money.ts            parseo/formato de montos, cuotas, conversiones USD (enteros)
+│  ├─ months.ts           meses 'YYYY-MM' y fechas 'YYYY-MM-DD' sin líos de huso horario
+│  ├─ domain/             charge_month y armado de cuotas
+│  └─ schemas.ts/types.ts zod de entidades e inputs y sus tipos
 └─ renderer/
    ├─ index.html          la CSP se inyecta desde electron.vite.config.ts
    └─ src/
       ├─ main.tsx
       ├─ app/             App, tema, globals.css (tokens de color)
-      ├─ features/        una carpeta por pantalla
+      ├─ features/        una carpeta por pantalla: dashboard, gastos, ingresos, movimientos,
+      │                   tarjetas, ahorros, reporte, configuracion (incluye backups)
       ├─ components/ui/   shadcn
-      └─ lib/             api.ts (call → tira ApiError), query-client, utils (cn)
+      └─ lib/             api.ts (call → tira ApiError), hooks (keys + useApiQuery/useApiMutation),
+                          movements (deshacer), export, catalog, utils
 ```
 
 ### Cómo agregar un canal IPC
@@ -114,12 +123,39 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
 
 ## Tests
 
-- Vitest corre con `ELECTRON_RUN_AS_NODE=1 electron vitest` (`scripts/run-vitest.mjs`): así better-sqlite3 se
-  compila una sola vez para el ABI de Electron (lo hace `electron-builder install-app-deps` en `postinstall`)
-  y sirve para la app y para los tests. No correr `npx vitest` directo.
+- Vitest corre con `ELECTRON_RUN_AS_NODE=1 electron vitest` (`scripts/run-vitest.mjs`), así usa el mismo
+  Node/ABI que la app. better-sqlite3 13 es N-API y trae prebuilds para todas las plataformas: no hay rebuild
+  (`npmRebuild: false`). No correr `npx vitest` directo.
 - Obligatorios: money.ts, charge_month con tarjetas (cierre a fin de mes, cambio de año), reparto de cuotas,
-  generación idempotente de recurrentes, disponible del mes, migraciones.
-- Repositorios: SQLite en memoria con las migraciones reales.
+  generación idempotente de recurrentes, disponible del mes, migraciones. También hay de tarjetas, ahorros,
+  reporte/exportación (se relee el xlsx con exceljs) y backups.
+- Repositorios y services: SQLite en memoria con las migraciones reales (`tests/helpers/context.ts`, con un
+  reloj fijo). Backups: archivos en un directorio temporal.
+- E2E (`tests/e2e`, Playwright `_electron`): cada test abre la app con `--user-data-dir` temporal. Necesitan
+  `out/` buildeado (`npm run test:e2e` lo hace).
+
+## Backups y exportación
+
+- Al iniciar: si hay migraciones pendientes sobre una base existente, backup `pre-migracion`; después de abrir,
+  backup `inicio` (salvo base recién creada). Manual desde Configuración → Backups. Se guardan los últimos 15
+  de cada tipo en `userData/backups` (`finanzas-AAAAMMDD-HHMMSS-<tipo>.db`), con `db.backup()`.
+- Restaurar: valida el archivo (`integrity_check`, tablas, versión de schema ≤ la de la app), hace un backup
+  `pre-restauracion`, cierra la base, reemplaza el archivo (borra `-wal`/`-shm`) y hace `app.relaunch()`.
+  El renderer sólo manda el nombre del backup (validado por regex) o pide abrir el diálogo nativo.
+- Exportar: xlsx (hojas Resumen, Gastos, Ingresos, Ahorros; montos numéricos con formato de moneda) y CSV de
+  gastos (`;`, coma decimal, UTF-8 con BOM, para Excel en español). Los gastos pendientes no suman.
+
+## Empaquetado y CI
+
+- `electron-builder.yml`: NSIS x64, ícono en `build/icon.ico` (se regenera desde `build/icon.svg` con
+  `npx electron scripts/make-icon.mjs`). Se excluyen del paquete los bundles de browser de exceljs, el fuente
+  de SQLite y los binarios de otras plataformas.
+- Sólo `better-sqlite3`, `date-fns`, `exceljs` y `zod` son `dependencies` (los usa main en runtime); todo lo
+  del renderer va en `devDependencies` porque Vite lo bundlea.
+- NSIS necesita Windows (o wine). `.github/workflows/build.yml` corre en `windows-latest`: lint, typecheck,
+  tests, e2e e instalador, que queda como artifact `mis-finanzas-instalador`.
+- El instalador no está firmado: Windows SmartScreen avisa la primera vez ("Más información" → "Ejecutar de
+  todas formas"). Desinstalar no borra los datos.
 
 ## Decisiones de producto (aprobadas 2026-10-01)
 

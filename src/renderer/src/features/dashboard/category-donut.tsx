@@ -4,7 +4,7 @@ import type { MonthSummary } from '@shared/types'
 import { CategoryIcon } from '@renderer/components/category-icon'
 import { Money } from '@renderer/components/money'
 import { useCatalog } from '@renderer/lib/catalog'
-import { cn } from '@renderer/lib/utils'
+import { cn, roundedPercentages } from '@renderer/lib/utils'
 
 /** Dona de gastos por categoría. Clic en una porción (o en la leyenda) filtra la lista. */
 export function CategoryDonut({
@@ -35,6 +35,7 @@ export function CategoryDonut({
       fill: selected === null || selected === d.id ? d.color : `${d.color}40`,
     }))
   const total = data.reduce((a, d) => a + d.value, 0)
+  const percents = roundedPercentages(data.map((d) => d.value))
 
   if (data.length === 0) {
     return (
@@ -90,7 +91,7 @@ export function CategoryDonut({
         </div>
       </div>
       <ul className="flex flex-col gap-1">
-        {data.map((d) => (
+        {data.map((d, i) => (
           <li key={d.id}>
             <button
               type="button"
@@ -105,7 +106,7 @@ export function CategoryDonut({
               <CategoryIcon icon={d.icon} color={d.color} size="sm" />
               <span className="flex-1 truncate text-left">{d.name}</span>
               <span className="text-xs text-muted-foreground tabular-nums">
-                {Math.round((d.value / total) * 100)}%
+                {percents[i]}%
               </span>
               <Money cents={d.value} decimals="never" className="w-24 text-right" />
             </button>
