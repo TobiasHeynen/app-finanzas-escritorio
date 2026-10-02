@@ -17,6 +17,7 @@
     "src/main/**/*",
     "src/preload/**/*",
     "packages/core/src/**/*",
-    "tests/**/*"
+    "tests/**/*",
+    "scripts/*.d.mts"
   ]
 }

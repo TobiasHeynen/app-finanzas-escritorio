@@ -26,6 +26,28 @@ terminadas; los cambios nuevos van con lint + typecheck + tests (y e2e si tocan 
 
 Antes de commitear: `npm run lint && npm run typecheck && npm test`.
 
+`npm run test:core-expo` corre la misma suite con core hablando con SQLite a través del adaptador del celu.
+
+## App para celular (`apps/mobile`)
+
+Expo SDK 57 + React Native 0.86 + expo-router (pestañas de `expo-router/js-tabs`) + expo-sqlite (API
+sincrónica). Estilos con `StyleSheet` y los tokens de `src/lib/theme.ts` (los mismos colores que la PC).
+Tiene su propio `package.json`/`node_modules` (no hay workspaces): `npm ci` en la raíz **y** en `apps/mobile`.
+
+- Core se usa tal cual: `src/lib/services.ts` abre `finanzas.db` con expo-sqlite, lo envuelve con
+  `wrapSyncSqlite` (`packages/core/src/db/sync-adapter.ts`) y llama a `initDatabase` + `createServices`.
+  En la UI: `useServices()` + TanStack Query.
+- Las migraciones se leen de `packages/core/src/db/migrations.generated.ts` (Metro no tiene
+  `import.meta.glob`): después de tocar un `.sql`, `node scripts/gen-migrations.mjs` (un test avisa).
+- `metro.config.js` resuelve los imports de core desde el `node_modules` de la app, nunca desde la raíz.
+- Comandos (en `apps/mobile`): `npm run lint`, `npm run typecheck`, `npx expo export --platform android`
+  (verifica el bundle), `npm start`. Para agregar paquetes, la versión exacta sale de
+  `node_modules/expo/bundledNativeModules.json` (`expo install` necesita la API de Expo, bloqueada en remoto).
+- Vista previa web (sólo para desarrollo): `npx expo export --platform web` y servir `dist/` con
+  `Cross-Origin-Opener-Policy: same-origin` y `Cross-Origin-Embedder-Policy: require-corp`.
+- CI (job `android`, ubuntu): `test:core-expo`, lint, typecheck, `expo prebuild` + `gradlew assembleRelease`
+  → artifact `chanchito-android-apk` (firmado con la clave de debug: sólo para probar).
+
 ## Stack
 
 Electron 44 + electron-vite 5 (Vite 7) + electron-builder (NSIS). Renderer: React 19 + TypeScript strict +

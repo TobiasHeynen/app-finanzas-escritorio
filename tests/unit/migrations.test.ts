@@ -1,7 +1,10 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { openDatabase } from '@main/db/connection'
 import { getSchemaVersion, migrate, pendingMigrations, SchemaTooNewError } from '@core/db/migrate'
 import { migrations, parseMigrationFiles } from '@core/db/migrations'
+import { renderMigrations } from '../../scripts/gen-migrations.mjs'
 import { seed, SEED_CATEGORIES, SEED_PAYMENT_METHODS } from '@core/db/seed'
 
 describe('migraciones', () => {
@@ -66,6 +69,14 @@ describe('migraciones', () => {
     migrate(db)
     db.prepare("INSERT INTO schema_migrations VALUES (999, 'futuro', '2030-01-01')").run()
     expect(() => migrate(db)).toThrow(SchemaTooNewError)
+  })
+
+  it('migrations.generated.ts está al día con los .sql (si falla: node scripts/gen-migrations.mjs)', () => {
+    const generated = readFileSync(
+      join(import.meta.dirname, '../../packages/core/src/db/migrations.generated.ts'),
+      'utf8',
+    )
+    expect(generated).toBe(renderMigrations())
   })
 
   it('valida los nombres y la secuencia de archivos', () => {

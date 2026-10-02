@@ -6,7 +6,8 @@ import prettier from 'eslint-config-prettier'
 import globals from 'globals'
 
 export default tseslint.config(
-  { ignores: ['out/**', 'dist/**', 'release/**', 'node_modules/**', 'coverage/**'] },
+  // apps/mobile tiene su propio eslint.config.mjs (necesita sus dependencias instaladas).
+  { ignores: ['out/**', 'dist/**', 'release/**', 'node_modules/**', 'coverage/**', 'apps/**'] },
   js.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   {

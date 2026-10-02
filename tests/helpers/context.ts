@@ -1,16 +1,29 @@
 import { openDatabase } from '@main/db/connection'
+import { wrapSyncSqlite } from '@core/db/sync-adapter'
+import type { SqlDb } from '@core/db/sql'
 import { migrate } from '@core/db/migrate'
 import { seed } from '@core/db/seed'
 import { createRepos } from '@core/repositories'
 import type { Clock, ServiceContext } from '@core/services/context'
+import { fakeExpoSqlite } from './fake-expo-sqlite'
 
 export interface TestContext extends ServiceContext {
   clock: Clock & { set(date: string): void }
 }
 
+/**
+ * Base en memoria para los tests de core. Con `CORE_DB=expo` (npm run test:core-expo) la misma suite
+ * corre a través del adaptador del celu, para verificar que se comporta igual que better-sqlite3.
+ */
+export function openTestDb(): SqlDb {
+  return process.env['CORE_DB'] === 'expo'
+    ? wrapSyncSqlite(fakeExpoSqlite())
+    : openDatabase(':memory:')
+}
+
 /** Base en memoria con las migraciones reales y (opcional) el seed. */
 export function createTestContext(today = '2026-10-15', { withSeed = true } = {}): TestContext {
-  const db = openDatabase(':memory:')
+  const db = openTestDb()
   migrate(db)
   if (withSeed) seed(db)
   let now = today

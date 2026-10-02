@@ -19,6 +19,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "node scripts/run-vitest.mjs run",
+    "test:core-expo": "node scripts/run-vitest.mjs run --core-expo",
     "test:watch": "node scripts/run-vitest.mjs",
     "package": "npm run build && electron-builder --win --x64",
     "package:store": "npm run build && electron-builder --win appx --x64",
