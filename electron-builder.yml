@@ -1,5 +1,5 @@
-appId: ar.tobiasheynen.misfinanzas
-productName: Mis Finanzas
+appId: ar.tobiasheynen.chanchito
+productName: Chanchito
 directories:
   buildResources: build
   output: release/${version}
@@ -19,19 +19,31 @@ win:
   target:
     - target: nsis
       arch: [x64]
-  executableName: mis-finanzas
+  executableName: chanchito
   icon: build/icon.ico
 nsis:
   oneClick: false
   perMachine: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: always
-  shortcutName: Mis Finanzas
-  artifactName: mis-finanzas-setup-${version}.${ext}
+  shortcutName: Chanchito
+  artifactName: chanchito-setup-${version}.${ext}
   installerIcon: build/icon.ico
   uninstallerIcon: build/icon.ico
-  uninstallDisplayName: Mis Finanzas
+  uninstallDisplayName: Chanchito
   # Desinstalar NO borra los datos (userData con la base y los backups).
   deleteAppDataOnUninstall: false
+# Paquete para Microsoft Store (`electron-builder --win appx`). La identidad sale de Partner Center
+# (Product identity) y no se cambia. No se firma: la Store lo firma al publicarlo. Los logos están en
+# build/appx/ (se regeneran con scripts/make-icon.mjs).
+appx:
+  identityName: TobiasHeynen.Chanchito
+  publisher: CN=FA4F9457-7C86-462B-8ADB-07C130F627B0
+  publisherDisplayName: Tobias Heynen
+  displayName: Chanchito
+  applicationId: Chanchito
+  backgroundColor: '#db2777'
+  languages: [es-AR]
+  artifactName: chanchito-${version}.${ext}
 # better-sqlite3 13 es N-API y trae prebuilds (win32-x64 incluido): no hace falta recompilar.
 npmRebuild: false

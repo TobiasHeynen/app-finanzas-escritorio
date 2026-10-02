@@ -22,10 +22,15 @@ jobs:
       - run: npx electron-vite build
       - name: E2E
         run: npx playwright test
-      - name: Instalador NSIS
-        run: npx electron-builder --win --x64 --publish never
+      - name: Instalador NSIS y paquete para Microsoft Store
+        run: npx electron-builder --win nsis appx --x64 --publish never
       - uses: actions/upload-artifact@v5
         with:
-          name: mis-finanzas-instalador
-          path: release/*/mis-finanzas-setup-*.exe
+          name: chanchito-instalador
+          path: release/*/chanchito-setup-*.exe
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v5
+        with:
+          name: chanchito-store
+          path: release/*/chanchito-*.appx
           if-no-files-found: error
