@@ -57,8 +57,8 @@ export default function MasScreen() {
         <ListItem
           icon={icon(DatabaseBackup)}
           title="Backups y pasar datos"
-          subtitle="Llega en la fase 7"
-          muted
+          subtitle="Backups, y llevar tus datos entre la PC y el celu"
+          onPress={() => router.push('/backups')}
         />
       </View>
       <Muted style={{ textAlign: 'center' }}>
