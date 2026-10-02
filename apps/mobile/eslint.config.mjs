@@ -26,7 +26,7 @@ export default [
   },
   { files: ['e2e/**/*.mjs'], languageOptions: { globals: globals.node } },
   {
-    files: ['metro.config.js'],
+    files: ['metro.config.js', 'plugins/**/*.js'],
     ...tseslint.configs.disableTypeChecked,
     languageOptions: {
       ...tseslint.configs.disableTypeChecked.languageOptions,

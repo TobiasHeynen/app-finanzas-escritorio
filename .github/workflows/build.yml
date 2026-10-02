@@ -39,6 +39,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EXPO_NO_TELEMETRY: 1
+      # Play exige un versionCode mayor en cada subida.
+      CHANCHITO_VERSION_CODE: ${{ github.run_number }}
+      HAS_UPLOAD_KEY: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -79,4 +82,24 @@ jobs:
         with:
           name: chanchito-android-apk
           path: apps/mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
+      # Sólo si están los secrets de la clave de subida (ver apps/mobile/PLAY.md).
+      - name: AAB para Google Play (firmado con la clave de subida)
+        if: env.HAS_UPLOAD_KEY == 'true'
+        working-directory: apps/mobile/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
+          CHANCHITO_UPLOAD_STORE_PASSWORD: ${{ secrets.ANDROID_UPLOAD_STORE_PASSWORD }}
+          CHANCHITO_UPLOAD_KEY_ALIAS: ${{ secrets.ANDROID_UPLOAD_KEY_ALIAS }}
+          CHANCHITO_UPLOAD_KEY_PASSWORD: ${{ secrets.ANDROID_UPLOAD_KEY_PASSWORD }}
+        run: |
+          export CHANCHITO_UPLOAD_STORE_FILE="$RUNNER_TEMP/upload.jks"
+          echo "$KEYSTORE_BASE64" | base64 --decode > "$CHANCHITO_UPLOAD_STORE_FILE"
+          ./gradlew bundleRelease --no-daemon
+          rm -f "$CHANCHITO_UPLOAD_STORE_FILE"
+      - if: env.HAS_UPLOAD_KEY == 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: chanchito-android-aab
+          path: apps/mobile/android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error

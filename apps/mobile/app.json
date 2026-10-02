@@ -32,9 +32,13 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 160,
           "backgroundColor": "#f9fafb",
-          "dark": { "image": "./assets/splash-icon.png", "backgroundColor": "#0d0f15" }
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#0d0f15"
+          }
         }
-      ]
+      ],
+      "./plugins/with-upload-signing"
     ],
     "experiments": {
       "typedRoutes": true
