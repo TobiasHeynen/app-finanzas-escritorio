@@ -1,5 +1,5 @@
-import { router } from 'expo-router'
 import type { Expense } from '@shared/types'
+import { openWith, takePayload } from '@/lib/nav-payload'
 
 export interface ExpenseDefaults {
   purchaseDate?: string
@@ -9,24 +9,19 @@ export interface ExpenseDefaults {
   amountCents?: number | null
 }
 
-/**
- * El formulario de gasto es una pantalla aparte (/gasto). El gasto a editar o los valores por defecto
- * se pasan por acá y no por la URL (son objetos).
- */
-let pending: { expense: Expense | null; defaults?: ExpenseDefaults | undefined } = {
-  expense: null,
+interface Target {
+  expense: Expense | null
+  defaults?: ExpenseDefaults | undefined
 }
 
 export function openNewExpense(defaults?: ExpenseDefaults): void {
-  pending = { expense: null, defaults }
-  router.push('/gasto')
+  openWith<Target>('/gasto', { expense: null, defaults })
 }
 
 export function openEditExpense(expense: Expense): void {
-  pending = { expense }
-  router.push('/gasto')
+  openWith<Target>('/gasto', { expense })
 }
 
-export function takeExpenseTarget() {
-  return pending
+export function takeExpenseTarget(): Target {
+  return takePayload<Target>('/gasto', { expense: null })
 }

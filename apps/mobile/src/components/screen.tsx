@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { router } from 'expo-router'
+import { ChevronLeft } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { space, useColors } from '@/lib/theme'
 
@@ -13,7 +15,9 @@ export function Screen({
   children,
   overlay,
   bottomSpace,
+  back,
 }: {
+  back?: boolean
   title?: string
   right?: ReactNode
   children: ReactNode
@@ -29,7 +33,25 @@ export function Screen({
       >
         {title ? (
           <View style={styles.titleRow}>
-            <Text style={[styles.title, { color: colors.foreground }]}>{title}</Text>
+            {back ? (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Volver"
+                hitSlop={10}
+                onPress={() => router.back()}
+              >
+                <ChevronLeft color={colors.foreground} size={26} />
+              </Pressable>
+            ) : null}
+            <Text
+              style={[
+                styles.title,
+                { color: colors.foreground },
+                back && { flex: 1, fontSize: 22 },
+              ]}
+            >
+              {title}
+            </Text>
             {right}
           </View>
         ) : null}
@@ -58,7 +80,12 @@ export function ComingSoon({ title, phase, what }: { title: string; phase: numbe
 const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { padding: space(4), gap: space(4) },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space(2),
+  },
   title: { fontSize: 26, fontWeight: '700' },
   soon: {
     borderWidth: StyleSheet.hairlineWidth,

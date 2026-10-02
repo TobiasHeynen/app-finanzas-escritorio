@@ -9,6 +9,7 @@ import { Screen } from '@/components/screen'
 import { Button, Card, Chip, SectionTitle } from '@/components/ui'
 import { ExpenseList } from '@/features/gastos/expense-list'
 import { openNewExpense } from '@/features/gastos/open-expense'
+import { IncomesCard } from '@/features/ingresos/incomes-card'
 import { CategoryBars } from '@/features/inicio/category-bars'
 import { SummaryCards } from '@/features/inicio/summary-cards'
 import { useCatalog } from '@/lib/catalog'
@@ -60,6 +61,8 @@ export default function InicioScreen() {
       </View>
 
       {data ? <SummaryCards summary={data.summary} /> : null}
+
+      <IncomesCard month={month} />
 
       {data && data.summary.byCategory.some((r) => r.amountCents > 0) ? (
         <Card style={{ gap: space(3) }}>

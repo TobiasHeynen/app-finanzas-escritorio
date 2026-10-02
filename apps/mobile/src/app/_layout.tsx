@@ -9,6 +9,9 @@ import { queryClient } from '@/lib/query'
 import { Toaster } from '@/components/toaster'
 import { useColors, useIsDark, type Colors } from '@/lib/theme'
 
+/** Formularios: se abren desde abajo, como hojas. */
+const MODALS = ['gasto', 'ingreso', 'config/recurrente', 'config/categoria', 'config/medio']
+
 type Boot = { ok: true; app: AppServices } | { ok: false; message: string } | null
 
 function boot(): Boot {
@@ -69,10 +72,13 @@ export default function RootLayout() {
         <QueryClientProvider client={queryClient}>
           <Stack screenOptions={{ headerShown: false }}>
             <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="gasto"
-              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-            />
+            {MODALS.map((name) => (
+              <Stack.Screen
+                key={name}
+                name={name}
+                options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+              />
+            ))}
           </Stack>
           <Toaster bottomOffset={64} />
         </QueryClientProvider>
