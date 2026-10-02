@@ -1,4 +1,6 @@
-# Mis Finanzas
+# Chanchito
+
+<img src="docs/icon.png" alt="" width="96" />
 
 App de escritorio para Windows para llevar tus finanzas personales mes a mes, pensada para Argentina:
 
@@ -11,7 +13,11 @@ App de escritorio para Windows para llevar tus finanzas personales mes a mes, pe
 
 ## Descarga
 
-Gratis. El instalador para Windows sale de GitHub Actions (artifact `mis-finanzas-instalador` del último build).
+Gratis. El instalador para Windows sale de GitHub Actions (artifact `chanchito-instalador` del último build).
+Próximamente en Microsoft Store.
+
+[Política de privacidad](https://tobiasheynen.github.io/app-finanzas-escritorio/privacidad.html): la app no
+recolecta ningún dato.
 
 ## Desarrollo
 
@@ -20,6 +26,7 @@ npm ci
 npm run dev       # app en modo desarrollo
 npm test          # tests unitarios
 npm run package   # instalador NSIS (en Windows)
+npm run package:store  # paquete .appx para Microsoft Store (en Windows)
 ```
 
 Más detalle técnico en [CLAUDE.md](CLAUDE.md).

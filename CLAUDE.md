@@ -1,4 +1,4 @@
-# Mis Finanzas
+# Chanchito
 
 App de escritorio (Windows) para control de gastos personales: gastos, ingresos y ahorros mes a mes,
 cuotas proyectadas, gastos recurrentes, tarjetas de crédito (el gasto cuenta en el mes en que se paga el
@@ -22,6 +22,7 @@ terminadas; los cambios nuevos van con lint + typecheck + tests (y e2e si tocan 
 | `npm run lint`                    | ESLint (typescript-eslint strict type-checked)                      |
 | `npm run format` / `format:check` | Prettier (con orden de clases de Tailwind)                          |
 | `npm run package`                 | Build + instalador NSIS para Windows x64 en `release/` (en Windows) |
+| `npm run package:store`           | Build + paquete appx para Microsoft Store (en Windows)              |
 
 Antes de commitear: `npm run lint && npm run typecheck && npm test`.
 
@@ -147,15 +148,22 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
 
 ## Empaquetado y CI
 
-- `electron-builder.yml`: NSIS x64, ícono en `build/icon.ico` (se regenera desde `build/icon.svg` con
-  `npx electron scripts/make-icon.mjs`). Se excluyen del paquete los bundles de browser de exceljs, el fuente
+- `electron-builder.yml`: NSIS x64 y appx (Microsoft Store). Ícono en `build/icon.ico` y logos de la Store
+  en `build/appx/`; todo se regenera desde `build/icon.svg` y `build/glyph.svg` con
+  `npx electron scripts/make-icon.mjs` (en Linux como root: `xvfb-run -a npx electron --no-sandbox ...`). Se excluyen del paquete los bundles de browser de exceljs, el fuente
   de SQLite y los binarios de otras plataformas.
 - Sólo `better-sqlite3`, `date-fns`, `exceljs` y `zod` son `dependencies` (los usa main en runtime); todo lo
   del renderer va en `devDependencies` porque Vite lo bundlea.
 - NSIS necesita Windows (o wine). `.github/workflows/build.yml` corre en `windows-latest`: lint, typecheck,
-  tests, e2e e instalador, que queda como artifact `mis-finanzas-instalador`.
+  tests, e2e, instalador NSIS (artifact `chanchito-instalador`) y paquete appx para la Store (artifact
+  `chanchito-store`).
 - El instalador no está firmado: Windows SmartScreen avisa la primera vez ("Más información" → "Ejecutar de
   todas formas"). Desinstalar no borra los datos.
+- Microsoft Store: la identidad del paquete (`appx.identityName`, `publisher`, `publisherDisplayName`) sale de
+  Partner Center y **no se cambia**. El appx va sin firmar; la Store lo firma. Política de privacidad y
+  landing en `docs/` (GitHub Pages desde `main` /docs).
+- La app se llamaba "Mis Finanzas": si existe `%APPDATA%\Mis Finanzas\finanzas.db` y no hay base en la
+  carpeta nueva, `main/index.ts` sigue usando la vieja. Las claves de localStorage `mis-finanzas:*` quedan así.
 
 ## Decisiones de producto (aprobadas 2026-10-01)
 
