@@ -7,6 +7,7 @@ import { Money } from '@/components/money'
 import { useCatalog } from '@/lib/catalog'
 import { useDeleteExpense, useDeletePlan, useDuplicateExpense } from '@/lib/movements'
 import { radius, space, useColors } from '@/lib/theme'
+import { openPlan } from '@/features/tarjetas/open-plan'
 import { openEditExpense } from './open-expense'
 
 export function ExpenseRow({ expense }: { expense: Expense }) {
@@ -24,8 +25,9 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
     if (!inst) return
     Alert.alert(
       `${title} · cuota ${String(inst.number)}/${String(inst.count)}`,
-      `Cae en ${formatMonthLong(expense.chargeMonth)}. Las cuotas se editan desde Tarjetas.`,
+      `Cae en ${formatMonthLong(expense.chargeMonth)}.`,
       [
+        { text: 'Ver la compra', onPress: () => openPlan(inst.planId) },
         {
           text: 'Borrar las futuras',
           onPress: () => removePlan.mutate({ id: inst.planId, scope: 'future' }),
@@ -41,7 +43,7 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
   }
 
   const onPress = () => {
-    if (expense.installment) planActions()
+    if (expense.installment) openPlan(expense.installment.planId)
     else openEditExpense(expense)
   }
 
