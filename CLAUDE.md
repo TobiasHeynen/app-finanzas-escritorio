@@ -39,7 +39,8 @@ Tiene su propio `package.json`/`node_modules` (no hay workspaces): `npm ci` en l
 - La UI usa **los mismos canales que la PC**: `call(canal, input)` (`src/lib/api.ts`) pasa por el `dispatch` de
   core (zod) y los handlers de `packages/core/src/api/handlers.ts`, sin IPC. Mismos hooks (`useApiQuery`,
   `useApiMutation`, `keys`, `movementKeys`) que el renderer. Los canales de plataforma (backups, exportar) se
-  suman con `addHandlers`.
+  suman con `addHandlers` (exportar: `src/lib/export.ts`, arma el archivo con core y lo comparte con
+  expo-sharing; en web lo descarga).
 - Estructura: `src/app/` rutas de expo-router (pestañas en `(tabs)/`, formularios como pantallas modales),
   `src/features/<pantalla>/`, `src/components/` (ui.tsx con Button/Card/Chip/TextField, Money, MoneyField,
   DateField con calendario propio, toaster con "Deshacer"), `src/lib/`.
@@ -78,7 +79,9 @@ packages/core/src/        lógica compartida PC/celu (alias @core y @shared). ES
 ├─ api/                   dispatch (valida con zod → handler → IpcResult) y handlers de core por canal
 ├─ db/                    sql.ts (interfaz SqlDb), migrations/NNN_*.sql, migrate, seed, init (migra+siembra+purga)
 ├─ repositories/          SQL plano sobre SqlDb
-├─ services/              reglas de negocio: expenses, recurring, incomes, summary, cards, savings, report
+├─ services/              reglas de negocio: expenses, recurring, incomes, summary, cards, savings, report,
+│                         export-data (datos/resumen/CSV de la exportación), export-file (xlsx del celu)
+├─ xlsx/                  zip "store" + escritor de .xlsx propio, sin dependencias (lo usa el celu)
 └─ shared/                código común (también lo usa el renderer)
    ├─ ipc/channels.ts     lista blanca de canales (SIN zod: lo usa el preload)
    ├─ ipc/contract.ts     { canal: { input, output } } con zod: fuente de verdad
@@ -179,6 +182,8 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
   El renderer sólo manda el nombre del backup (validado por regex) o pide abrir el diálogo nativo.
 - Exportar: xlsx (hojas Resumen, Gastos, Ingresos, Ahorros; montos numéricos con formato de moneda) y CSV de
   gastos (`;`, coma decimal, UTF-8 con BOM, para Excel en español). Los gastos pendientes no suman.
+  Los datos, el resumen y el CSV salen de `@core/services/export-data`; la PC arma el xlsx con exceljs y el celu
+  con el escritor de `packages/core/src/xlsx/` (exceljs no anda en React Native). Un test relee los dos con exceljs.
 
 ## Empaquetado y CI
 
