@@ -13,6 +13,13 @@ import { openDatabase } from '@main/db/connection'
 import { migrate } from '@core/db/migrate'
 import { seed } from '@core/db/seed'
 import { AppError } from '@shared/errors'
+import Database from 'better-sqlite3'
+import {
+  backupsToPrune,
+  looksLikeSqlite,
+  validateBackupDb,
+  withoutWal,
+} from '@core/db/backup-rules'
 
 const dirs: string[] = []
 const tempDir = () => {
@@ -97,5 +104,50 @@ describe('backups', () => {
     expect(isBackupName('finanzas-20261001-090507-manual.db')).toBe(true)
     expect(isBackupName('../finanzas-20261001-090507-manual.db')).toBe(false)
     expect(isBackupName('finanzas.db')).toBe(false)
+  })
+})
+
+describe('backups entre PC y celu', () => {
+  it('un backup como los del celu (imagen serializada, sin WAL) se restaura en la PC', () => {
+    const dir = tempDir()
+    const db = fileDb(dir)
+    db.prepare(
+      "INSERT INTO incomes (month, type, description, amount_cents, date) VALUES ('2026-10', 'sueldo', '', 100, '2026-10-01')",
+    ).run()
+    const image = new Uint8Array(db.serialize())
+    db.close()
+    expect(image[18]).toBe(2) // la base está en WAL
+    const mobile = withoutWal(image)
+    expect([mobile[18], mobile[19]]).toEqual([1, 1])
+    expect(looksLikeSqlite(mobile)).toBe(true)
+
+    const file = join(dir, 'finanzas-20261002-101010-manual.db')
+    writeFileSync(file, mobile)
+    expect(validateBackupFile(file).schemaVersion).toBeGreaterThan(0)
+    const restored = new Database(file, { readonly: true })
+    expect(restored.prepare('SELECT COUNT(*) AS n FROM incomes').get()).toEqual({ n: 1 })
+    restored.close()
+
+    // Y en memoria, como valida el celu antes de restaurar.
+    const memory = new Database(Buffer.from(mobile))
+    expect(validateBackupDb(memory, 'x.db').schemaVersion).toBeGreaterThan(0)
+    memory.close()
+  })
+
+  it('no confunde cualquier archivo con una base', () => {
+    expect(looksLikeSqlite(new Uint8Array(500).fill(7))).toBe(false)
+    expect(looksLikeSqlite(new TextEncoder().encode('SQLite format 3'))).toBe(false)
+  })
+
+  it('la rotación es la misma en las dos apps', () => {
+    const names = Array.from(
+      { length: 17 },
+      (_, i) => `finanzas-202601${String(i + 1).padStart(2, '0')}-100000-inicio.db`,
+    )
+    names.push('finanzas-20250101-000000-manual.db', 'otra-cosa.db')
+    expect(backupsToPrune(names)).toEqual([
+      'finanzas-20260102-100000-inicio.db',
+      'finanzas-20260101-100000-inicio.db',
+    ])
   })
 })
