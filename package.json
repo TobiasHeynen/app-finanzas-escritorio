@@ -5,6 +5,7 @@
   "private": true,
   "description": "App de escritorio para control de gastos personales",
   "author": "Tobias Heynen",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "main": "./out/main/index.js",
   "engines": {
     "node": ">=22"
