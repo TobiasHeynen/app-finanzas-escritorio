@@ -10,7 +10,14 @@ import { Toaster } from '@/components/toaster'
 import { useColors, useIsDark, type Colors } from '@/lib/theme'
 
 /** Formularios: se abren desde abajo, como hojas. */
-const MODALS = ['gasto', 'ingreso', 'config/recurrente', 'config/categoria', 'config/medio']
+const MODALS = [
+  'gasto',
+  'ingreso',
+  'cuotas',
+  'config/recurrente',
+  'config/categoria',
+  'config/medio',
+]
 
 type Boot = { ok: true; app: AppServices } | { ok: false; message: string } | null
 
