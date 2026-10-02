@@ -49,7 +49,17 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['electron', 'better-sqlite3', 'exceljs', 'node:*', 'react-native', 'expo*'],
+              group: [
+                'electron',
+                'better-sqlite3',
+                'exceljs',
+                'node:*',
+                'react-native',
+                // 'expo*' también agarraría './export-data'.
+                'expo',
+                'expo-*',
+                '@expo/*',
+              ],
               message:
                 'core no puede depender de una plataforma: pasalo por una interfaz (ver db/sql.ts).',
             },

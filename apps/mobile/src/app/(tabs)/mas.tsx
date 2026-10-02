@@ -45,14 +45,14 @@ export default function MasScreen() {
         <ListItem
           icon={icon(ChartColumn)}
           title="Reporte anual"
-          subtitle="Llega en la fase 6"
-          muted
+          subtitle="En qué se fue la plata, mes a mes"
+          onPress={() => router.push('/reporte')}
         />
         <ListItem
           icon={icon(FileSpreadsheet)}
           title="Exportar a Excel / CSV"
-          subtitle="Llega en la fase 6"
-          muted
+          subtitle="Un mes o un año, para compartir o guardar"
+          onPress={() => router.push('/exportar')}
         />
         <ListItem
           icon={icon(DatabaseBackup)}
