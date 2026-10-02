@@ -10,7 +10,7 @@ import {
   type BackupInfo,
 } from './db/backup'
 import { openDatabase, type Db } from './db/connection'
-import { getSchemaVersion, pendingMigrations } from './db/migrate'
+import { getSchemaVersion, pendingMigrations } from '@core/db/migrate'
 import { backupsDir, dbPath } from './paths'
 
 /** Antes de migrar una base existente, la respalda (por si la migración sale mal). */

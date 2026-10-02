@@ -43,7 +43,22 @@ caso los componentes se escriben a mano en `src/renderer/src/components/ui/` cop
 ## Arquitectura
 
 ```
-src/
+packages/core/src/        lógica compartida PC/celu (alias @core y @shared). ESLint le prohíbe importar
+│                         electron, better-sqlite3, exceljs, node:*, react-native o expo
+├─ db/                    sql.ts (interfaz SqlDb), migrations/NNN_*.sql, migrate, seed, init (migra+siembra+purga)
+├─ repositories/          SQL plano sobre SqlDb
+├─ services/              reglas de negocio: expenses, recurring, incomes, summary, cards, savings, report
+└─ shared/                código común (también lo usa el renderer)
+   ├─ ipc/channels.ts     lista blanca de canales (SIN zod: lo usa el preload)
+   ├─ ipc/contract.ts     { canal: { input, output } } con zod: fuente de verdad
+   ├─ ipc/api.ts          tipo de window.api
+   ├─ ipc/result.ts       IpcResult<T> = { ok: true, data } | { ok: false, error }
+   ├─ errors.ts           AppError(code, message, fields?)
+   ├─ money.ts            parseo/formato de montos, cuotas, conversiones USD (enteros)
+   ├─ months.ts           meses 'YYYY-MM' y fechas 'YYYY-MM-DD' sin líos de huso horario
+   ├─ domain/             charge_month y armado de cuotas
+   └─ schemas.ts/types.ts zod de entidades e inputs y sus tipos
+src/                      app de escritorio (Electron)
 ├─ main/                  proceso principal (Node)
 │  ├─ index.ts            ciclo de vida, single instance
 │  ├─ window.ts           BrowserWindow con webPreferences seguras
@@ -54,22 +69,10 @@ src/
 │  │  └─ handlers.ts      mapa canal → handler (llama a services)
 │  ├─ backups.ts          backup antes de migrar, acciones de backup/restaurar (diálogos, relaunch)
 │  ├─ export-file.ts      diálogo "Guardar como" y escritura del xlsx/csv
-│  ├─ db/                 connection, migrations/NNN_*.sql, migrate, seed, bootstrap,
+│  ├─ db/                 connection (better-sqlite3 + PRAGMAs), bootstrap (abre + init de core),
 │  │                      backup.ts (API de backup de SQLite, rotación, validación de archivos)
-│  ├─ repositories/       SQL plano con better-sqlite3
-│  └─ services/           reglas de negocio: expenses, recurring, incomes, summary, cards,
-│                         savings, report, export (exceljs)
+│  └─ services/           los de core + export (exceljs), que sólo existe en la PC
 ├─ preload/index.ts       contextBridge: expone sólo window.api.invoke
-├─ shared/                código común main/renderer
-│  ├─ ipc/channels.ts     lista blanca de canales (SIN zod: lo usa el preload)
-│  ├─ ipc/contract.ts     { canal: { input, output } } con zod: fuente de verdad
-│  ├─ ipc/api.ts          tipo de window.api
-│  ├─ ipc/result.ts       IpcResult<T> = { ok: true, data } | { ok: false, error }
-│  ├─ errors.ts           AppError(code, message, fields?)
-│  ├─ money.ts            parseo/formato de montos, cuotas, conversiones USD (enteros)
-│  ├─ months.ts           meses 'YYYY-MM' y fechas 'YYYY-MM-DD' sin líos de huso horario
-│  ├─ domain/             charge_month y armado de cuotas
-│  └─ schemas.ts/types.ts zod de entidades e inputs y sus tipos
 └─ renderer/
    ├─ index.html          la CSP se inyecta desde electron.vite.config.ts
    └─ src/
@@ -84,8 +87,8 @@ src/
 
 ### Cómo agregar un canal IPC
 
-1. Agregar el nombre en `src/shared/ipc/channels.ts` (`dominio:accion`).
-2. Agregar `{ input, output }` en `src/shared/ipc/contract.ts`. Inputs con `.strict()`.
+1. Agregar el nombre en `packages/core/src/shared/ipc/channels.ts` (`dominio:accion`).
+2. Agregar `{ input, output }` en `packages/core/src/shared/ipc/contract.ts`. Inputs con `.strict()`.
 3. Implementar el handler en `src/main/ipc/handlers.ts` (delegando en un service).
 4. En el renderer: `call('dominio:accion', input)` dentro de un hook de TanStack Query en `lib/` o en la feature.
    El typecheck falla si falta el handler; un test verifica que la lista blanca coincida con el contrato.
@@ -98,7 +101,7 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
 - Todos los montos son **INTEGER en la unidad mínima**: centavos de ARS o centavos de USD. Columnas `*_cents`
   o `*_minor`. **Prohibido float para dinero.**
 - Cotizaciones: INTEGER, centavos de ARS por 1 USD (`rate_cents_per_usd`).
-- Todo parseo de montos pasa por `src/shared/money.ts` (input argentino "1.234,56" → 123456). ESLint prohíbe
+- Todo parseo de montos pasa por `packages/core/src/shared/money.ts` (input argentino "1.234,56" → 123456). ESLint prohíbe
   `parseFloat` fuera de ese archivo. En zod, los montos son `z.number().int()`.
 - Reparto de cuotas: si el total no divide exacto, el resto de centavos va en la **primera** cuota.
 - Monto `NULL` = **pendiente**, distinto de $0. La UI lo muestra como "pendiente de cargar".

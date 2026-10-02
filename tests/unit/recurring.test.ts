@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createRecurringService } from '@main/services/recurring'
-import { monthsToGenerate } from '@main/services/recurring-schedule'
+import { createRecurringService } from '@core/services/recurring'
+import { monthsToGenerate } from '@core/services/recurring-schedule'
 import { createTestContext, idsByName, type TestContext } from '../helpers/context'
 
 describe('monthsToGenerate', () => {

@@ -1,4 +1,4 @@
-import type { Db } from './connection'
+import type { SqlDb as Db } from './sql'
 import { migrations as defaultMigrations, type Migration } from './migrations'
 
 export class SchemaTooNewError extends Error {
@@ -43,7 +43,7 @@ export function migrate(db: Db, list: Migration[] = defaultMigrations): number[]
     })()
     applied.push(migration.version)
   }
-  const fkErrors = db.pragma('foreign_key_check') as unknown[]
+  const fkErrors = db.prepare('PRAGMA foreign_key_check').all()
   if (fkErrors.length > 0) throw new Error('Las migraciones dejaron claves foráneas inválidas')
   return applied
 }

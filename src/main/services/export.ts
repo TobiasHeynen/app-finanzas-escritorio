@@ -9,8 +9,8 @@ import {
 } from '@shared/months'
 import type { ExportRequest, Expense, Income, SavingsMovement } from '@shared/types'
 import { INCOME_TYPE_LABELS } from '@shared/types'
-import type { ServiceContext } from './context'
-import { savingsArsOutflow } from './summary-calc'
+import type { ServiceContext } from '@core/services/context'
+import { savingsArsOutflow } from '@core/services/summary-calc'
 
 const ARS_FORMAT = '"$" #,##0.00;-"$" #,##0.00'
 const USD_FORMAT = '"US$" #,##0.00;-"US$" #,##0.00'

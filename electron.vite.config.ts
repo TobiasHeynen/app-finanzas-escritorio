@@ -4,7 +4,8 @@ import type { Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
-const shared = resolve(__dirname, 'src/shared')
+const shared = resolve(__dirname, 'packages/core/src/shared')
+const core = resolve(__dirname, 'packages/core/src')
 
 /**
  * Content-Security-Policy del renderer, como <meta> (funciona también con file:// en prod).
@@ -38,7 +39,9 @@ function cspPlugin(): Plugin {
 
 export default defineConfig({
   main: {
-    resolve: { alias: { '@shared': shared, '@main': resolve(__dirname, 'src/main') } },
+    resolve: {
+      alias: { '@shared': shared, '@core': core, '@main': resolve(__dirname, 'src/main') },
+    },
   },
   preload: {
     resolve: { alias: { '@shared': shared } },

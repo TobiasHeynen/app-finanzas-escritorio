@@ -1,8 +1,8 @@
 import { openDatabase } from '@main/db/connection'
-import { migrate } from '@main/db/migrate'
-import { seed } from '@main/db/seed'
-import { createRepos } from '@main/repositories'
-import type { Clock, ServiceContext } from '@main/services/context'
+import { migrate } from '@core/db/migrate'
+import { seed } from '@core/db/seed'
+import { createRepos } from '@core/repositories'
+import type { Clock, ServiceContext } from '@core/services/context'
 
 export interface TestContext extends ServiceContext {
   clock: Clock & { set(date: string): void }

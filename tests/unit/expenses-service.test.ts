@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createExpensesService } from '@main/services/expenses'
+import { createExpensesService } from '@core/services/expenses'
 import { AppError } from '@shared/errors'
 import { createTestContext, idsByName, type TestContext } from '../helpers/context'
 

@@ -4,7 +4,8 @@
   "compilerOptions": {
     "paths": {
       "@renderer/*": ["./src/renderer/src/*"],
-      "@shared/*": ["./src/shared/*"]
+      "@shared/*": ["./packages/core/src/shared/*"],
+      "@core/*": ["./packages/core/src/*"]
     }
   }
 }

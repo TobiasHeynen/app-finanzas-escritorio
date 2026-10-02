@@ -1,4 +1,4 @@
-import type { Db } from '../db/connection'
+import type { SqlDb as Db } from '../db/sql'
 import type { Income, IncomeInput } from '@shared/types'
 import type { Month } from '@shared/months'
 import { nowIso, notFound } from './util'

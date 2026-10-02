@@ -1,4 +1,4 @@
-import type { Db } from './connection'
+import type { SqlDb as Db } from './sql'
 
 interface SeedCategory {
   name: string
