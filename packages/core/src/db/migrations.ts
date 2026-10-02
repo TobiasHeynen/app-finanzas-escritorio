@@ -1,17 +1,14 @@
+import { migrationFiles } from './migrations.generated'
+
 export interface Migration {
   version: number
   name: string
   sql: string
 }
 
-// Vite (build y Vitest) empaqueta los .sql como strings: no hay que leer archivos sueltos del asar.
-const files = import.meta.glob<string>('./migrations/*.sql', {
-  query: '?raw',
-  import: 'default',
-  eager: true,
-})
-
-export const migrations: Migration[] = parseMigrationFiles(files)
+// El SQL viaja como strings dentro del bundle (Vite en la PC, Metro en el celu): no hay archivos sueltos.
+// Después de agregar o cambiar un .sql: node scripts/gen-migrations.mjs.
+export const migrations: Migration[] = parseMigrationFiles(migrationFiles)
 
 export function parseMigrationFiles(entries: Record<string, string>): Migration[] {
   const list = Object.entries(entries).map(([path, sql]) => {

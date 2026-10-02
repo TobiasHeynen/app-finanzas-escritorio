@@ -4,3 +4,4 @@ release
 node_modules
 package-lock.json
 LICENSE.md
+packages/core/src/db/migrations.generated.ts
