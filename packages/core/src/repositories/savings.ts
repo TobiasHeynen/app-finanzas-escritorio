@@ -1,4 +1,4 @@
-import type { Db } from '../db/connection'
+import type { SqlDb as Db } from '../db/sql'
 import type { SavingsGoal, SavingsGoalInput, SavingsMovement } from '@shared/types'
 import type { Currency } from '@shared/money'
 import type { Month } from '@shared/months'

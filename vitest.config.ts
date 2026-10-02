@@ -4,7 +4,8 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   resolve: {
     alias: {
-      '@shared': resolve(__dirname, 'src/shared'),
+      '@shared': resolve(__dirname, 'packages/core/src/shared'),
+      '@core': resolve(__dirname, 'packages/core/src'),
       '@main': resolve(__dirname, 'src/main'),
     },
   },

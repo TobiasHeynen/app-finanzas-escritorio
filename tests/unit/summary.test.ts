@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { computeMonthSummary, savingsArsOutflow } from '@main/services/summary-calc'
-import { createRecurringService } from '@main/services/recurring'
-import { createSummaryService } from '@main/services/summary'
+import { computeMonthSummary, savingsArsOutflow } from '@core/services/summary-calc'
+import { createRecurringService } from '@core/services/recurring'
+import { createSummaryService } from '@core/services/summary'
 import { createTestContext, idsByName } from '../helpers/context'
 
 describe('computeMonthSummary (disponible del mes)', () => {

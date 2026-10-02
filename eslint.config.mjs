@@ -20,7 +20,7 @@ export default tseslint.config(
       ],
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/no-confusing-void-expression': ['error', { ignoreArrowShorthand: true }],
-      // Dinero en enteros: parsear números decimales sólo en src/shared/money.ts.
+      // Dinero en enteros: parsear números decimales sólo en packages/core/src/shared/money.ts.
       'no-restricted-globals': [
         'error',
         { name: 'parseFloat', message: 'Para montos usá money.ts (dinero siempre en enteros).' },
@@ -36,8 +36,27 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/shared/money.ts'],
+    files: ['packages/core/src/shared/money.ts'],
     rules: { 'no-restricted-globals': 'off', 'no-restricted-properties': 'off' },
+  },
+  {
+    // core lo comparten la PC (Electron) y el celu (React Native): nada específico de una plataforma.
+    files: ['packages/core/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['electron', 'better-sqlite3', 'exceljs', 'node:*', 'react-native', 'expo*'],
+              message:
+                'core no puede depender de una plataforma: pasalo por una interfaz (ver db/sql.ts).',
+            },
+            { group: ['@main/*', '@renderer/*'], message: 'core no puede importar de una app.' },
+          ],
+        },
+      ],
+    },
   },
   {
     files: ['src/renderer/**/*.{ts,tsx}'],

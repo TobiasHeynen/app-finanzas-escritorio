@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { openDatabase } from '@main/db/connection'
-import { getSchemaVersion, migrate, pendingMigrations, SchemaTooNewError } from '@main/db/migrate'
-import { migrations, parseMigrationFiles } from '@main/db/migrations'
-import { seed, SEED_CATEGORIES, SEED_PAYMENT_METHODS } from '@main/db/seed'
+import { getSchemaVersion, migrate, pendingMigrations, SchemaTooNewError } from '@core/db/migrate'
+import { migrations, parseMigrationFiles } from '@core/db/migrations'
+import { seed, SEED_CATEGORIES, SEED_PAYMENT_METHODS } from '@core/db/seed'
 
 describe('migraciones', () => {
   it('aplica todas desde cero y registra las versiones', () => {

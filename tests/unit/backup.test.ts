@@ -10,8 +10,8 @@ import {
   validateBackupFile,
 } from '@main/db/backup'
 import { openDatabase } from '@main/db/connection'
-import { migrate } from '@main/db/migrate'
-import { seed } from '@main/db/seed'
+import { migrate } from '@core/db/migrate'
+import { seed } from '@core/db/seed'
 import { AppError } from '@shared/errors'
 
 const dirs: string[] = []

@@ -1,4 +1,4 @@
-import type { Db } from '../db/connection'
+import type { SqlDb as Db } from '../db/sql'
 import type { PaymentMethod, PaymentMethodInput } from '@shared/types'
 import { nowIso, notFound, translateSqliteError } from './util'
 

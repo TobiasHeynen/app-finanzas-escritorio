@@ -3,7 +3,7 @@ import { mkdirSync, readdirSync, statSync, unlinkSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import { AppError } from '@shared/errors'
 import type { Db } from './connection'
-import { migrations } from './migrations'
+import { migrations } from '@core/db/migrations'
 
 export type BackupReason = 'inicio' | 'manual' | 'pre-migracion' | 'pre-restauracion'
 

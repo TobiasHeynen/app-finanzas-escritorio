@@ -1,4 +1,4 @@
-import type { Db } from '../db/connection'
+import type { SqlDb as Db } from '../db/sql'
 import { notFound } from './util'
 
 export interface PlanRow {

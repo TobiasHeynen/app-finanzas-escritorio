@@ -1,4 +1,4 @@
-import type { FinanzasApi } from '../shared/ipc/api'
+import type { FinanzasApi } from '@shared/ipc/api'
 
 declare global {
   interface Window {

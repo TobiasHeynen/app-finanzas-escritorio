@@ -1,10 +1,10 @@
 import ExcelJS from 'exceljs'
 import { describe, expect, it } from 'vitest'
-import { createExpensesService } from '@main/services/expenses'
+import { createExpensesService } from '@core/services/expenses'
 import { createExportService } from '@main/services/export'
-import { createRecurringService } from '@main/services/recurring'
-import { createReportService } from '@main/services/report'
-import { createSavingsService } from '@main/services/savings'
+import { createRecurringService } from '@core/services/recurring'
+import { createReportService } from '@core/services/report'
+import { createSavingsService } from '@core/services/savings'
 import { createTestContext, idsByName } from '../helpers/context'
 
 function setup(today = '2026-10-15') {

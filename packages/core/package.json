@@ -1,0 +1,11 @@
+{
+  "name": "@chanchito/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Lógica compartida de Chanchito (PC y celu): dinero, meses, schema SQLite, repositorios y services",
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "type": "module",
+  "exports": {
+    "./*": "./src/*.ts"
+  }
+}

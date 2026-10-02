@@ -1,26 +1,11 @@
-import type { ServiceContext } from './context'
-import { createCardsService } from './cards'
-import { createExpensesService } from './expenses'
-import { createExportService } from './export'
-import { createIncomesService } from './incomes'
-import { createRecurringService } from './recurring'
-import { createReportService } from './report'
-import { createSavingsService } from './savings'
-import { createSummaryService } from './summary'
+import { createServices as createCoreServices, type Services as CoreServices } from '@core/services'
+import type { ServiceContext } from '@core/services/context'
+import type { Db } from '../db/connection'
+import { createExportService, type ExportService } from './export'
 
-export function createServices(ctx: ServiceContext) {
-  const recurring = createRecurringService(ctx)
-  return {
-    ctx,
-    expenses: createExpensesService(ctx),
-    incomes: createIncomesService(ctx),
-    cards: createCardsService(ctx),
-    recurring,
-    savings: createSavingsService(ctx),
-    report: createReportService(ctx, recurring),
-    exporter: createExportService(ctx),
-    summary: createSummaryService(ctx, recurring),
-  }
+/** Los services de core más los que sólo existen en la PC. */
+export type Services = CoreServices<Db> & { exporter: ExportService }
+
+export function createServices(ctx: ServiceContext<Db>): Services {
+  return { ...createCoreServices(ctx), exporter: createExportService(ctx) }
 }
-
-export type Services = ReturnType<typeof createServices>

@@ -1,4 +1,4 @@
-import type { Db } from '../db/connection'
+import type { SqlDb as Db } from '../db/sql'
 
 export type SettingsRepo = ReturnType<typeof createSettingsRepo>
 

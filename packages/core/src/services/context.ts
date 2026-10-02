@@ -1,4 +1,4 @@
-import type { Db } from '../db/connection'
+import type { SqlDb as Db } from '../db/sql'
 import type { Repos } from '../repositories'
 import { monthOf, todayIso, type IsoDate, type Month } from '@shared/months'
 
@@ -8,8 +8,9 @@ export interface Clock {
 
 export const systemClock: Clock = { today: () => todayIso() }
 
-export interface ServiceContext {
-  db: Db
+/** `D` deja que cada app conserve el tipo concreto de su base (better-sqlite3, expo-sqlite). */
+export interface ServiceContext<D extends Db = Db> {
+  db: D
   repos: Repos
   clock: Clock
 }

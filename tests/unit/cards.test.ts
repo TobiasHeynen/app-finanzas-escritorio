@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { createCardsService } from '@main/services/cards'
-import { createExpensesService } from '@main/services/expenses'
+import { createCardsService } from '@core/services/cards'
+import { createExpensesService } from '@core/services/expenses'
 import { createTestContext, idsByName } from '../helpers/context'
 
 describe('pantalla de tarjetas', () => {

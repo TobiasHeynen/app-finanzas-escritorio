@@ -1,4 +1,4 @@
-import type { Db } from '../db/connection'
+import type { SqlDb as Db } from '../db/sql'
 import type { RecurringTemplate, RecurringTemplateInput } from '@shared/types'
 import type { Month } from '@shared/months'
 import { notFound } from './util'
