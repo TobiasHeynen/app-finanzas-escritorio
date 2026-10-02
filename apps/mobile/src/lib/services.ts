@@ -6,6 +6,7 @@ import { createServices, type Services } from '@core/services'
 import { systemClock } from '@core/services/context'
 import { initApi } from './api'
 import { DB_NAME } from './db-name'
+import { registerExportHandlers } from './export'
 
 export interface AppServices {
   services: Services
@@ -27,6 +28,7 @@ export function getAppServices(): AppServices {
   const services = createServices({ db, repos: createRepos(db), clock: systemClock })
   services.recurring.generateDue()
   initApi(services)
+  registerExportHandlers(services)
   current = { services, seeded }
   return current
 }
