@@ -62,21 +62,6 @@ export function Screen({
   )
 }
 
-/** Pestaña que todavía no está: dice en qué fase llega. */
-export function ComingSoon({ title, phase, what }: { title: string; phase: number; what: string }) {
-  const colors = useColors()
-  return (
-    <Screen title={title}>
-      <View style={[styles.soon, { backgroundColor: colors.card, borderColor: colors.border }]}>
-        <Text style={[styles.soonTitle, { color: colors.foreground }]}>Próximamente</Text>
-        <Text style={{ color: colors.mutedForeground }}>
-          {what} llega en la fase {phase} de la versión para celular.
-        </Text>
-      </View>
-    </Screen>
-  )
-}
-
 const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { padding: space(4), gap: space(4) },
@@ -87,11 +72,4 @@ const styles = StyleSheet.create({
     gap: space(2),
   },
   title: { fontSize: 26, fontWeight: '700' },
-  soon: {
-    borderWidth: StyleSheet.hairlineWidth,
-    borderRadius: 14,
-    padding: space(4),
-    gap: space(1),
-  },
-  soonTitle: { fontSize: 16, fontWeight: '600' },
 })
