@@ -105,3 +105,37 @@ jobs:
           name: chanchito-android-aab
           path: apps/mobile/android/app/build/outputs/bundle/release/*.aab
           if-no-files-found: error
+
+  # iPhone: compila para el simulador, sin firmar (la firma y TestFlight vienen cuando haya cuenta de Apple).
+  ios:
+    runs-on: macos-latest
+    env:
+      EXPO_NO_TELEMETRY: 1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - run: npm ci
+        working-directory: apps/mobile
+      - name: Proyecto de Xcode
+        working-directory: apps/mobile
+        run: npx expo prebuild --platform ios
+      - name: App para el simulador (sin firmar)
+        working-directory: apps/mobile/ios
+        run: |
+          xcodebuild -version
+          xcodebuild -workspace Chanchito.xcworkspace -scheme Chanchito -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO -quiet build
+      - name: Empaquetar la .app
+        run: |
+          cd apps/mobile/ios/build/Build/Products/Release-iphonesimulator
+          zip -qry "$GITHUB_WORKSPACE/chanchito-ios-simulador.zip" Chanchito.app
+      - uses: actions/upload-artifact@v5
+        with:
+          name: chanchito-ios-simulador
+          path: chanchito-ios-simulador.zip
+          if-no-files-found: error

@@ -54,6 +54,10 @@ Tiene su propio `package.json`/`node_modules` (no hay workspaces): `npm ci` en l
   `node_modules/expo/bundledNativeModules.json` (`expo install` necesita la API de Expo, bloqueada en remoto).
 - Vista previa web (sólo para desarrollo): `npx expo export --platform web` y servir `dist/` con
   `Cross-Origin-Opener-Policy: same-origin` y `Cross-Origin-Embedder-Policy: require-corp`.
+- iPhone: el mismo código. `ios` en `app.json` (bundle `ar.tobiasheynen.chanchito`, sólo iPhone, iOS 16.4+ por Expo
+  SDK 57, manifiesto de privacidad). El ícono de iOS va a sangre y sin alfa: `assets/icon-ios.png` sale de
+  `build/icon-ios.svg` (renderizarlo a 1024 y sacarle el canal alfa con `ffmpeg -pix_fmt rgb24`). CI (job `ios`,
+  macOS): `expo prebuild` + `xcodebuild` para el simulador sin firmar → artifact `chanchito-ios-simulador`.
 - CI (job `android`, ubuntu): `test:core-expo`, lint, typecheck, e2e web, `expo prebuild` + `gradlew assembleRelease`
   → artifact `chanchito-android-apk` (firmado con la clave de debug: sólo para probar).
 
