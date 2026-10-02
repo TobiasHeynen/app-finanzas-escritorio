@@ -5,3 +5,7 @@ node_modules
 package-lock.json
 LICENSE.md
 packages/core/src/db/migrations.generated.ts
+apps/mobile/dist-web
+apps/mobile/test-results
+apps/mobile/.expo
+apps/mobile/android
