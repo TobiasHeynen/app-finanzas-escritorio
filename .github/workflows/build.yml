@@ -39,11 +39,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EXPO_NO_TELEMETRY: 1
-      # Play exige un versionCode mayor en cada subida.
-      CHANCHITO_VERSION_CODE: ${{ github.run_number }}
       HAS_UPLOAD_KEY: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 != '' }}
     steps:
       - uses: actions/checkout@v5
+      # Play exige un versionCode mayor en cada subida: minutos desde 2026-01-01, que sube igual en
+      # `build` y en `release-android` (cada workflow tiene su propio run_number).
+      - name: versionCode
+        run: echo "CHANCHITO_VERSION_CODE=$(( ($(date -u +%s) - 1767225600) / 60 ))" >> "$GITHUB_ENV"
       - uses: actions/setup-node@v5
         with:
           node-version: 22
