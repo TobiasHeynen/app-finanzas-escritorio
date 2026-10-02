@@ -6,7 +6,6 @@ import {
   House,
   PiggyBank,
   Settings,
-  Wallet,
 } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import {
@@ -30,9 +29,9 @@ export function Layout() {
         <aside className="flex w-60 shrink-0 flex-col gap-6 border-r bg-sidebar px-4 py-5">
           <div className="flex items-center gap-2.5 px-2">
             <div className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-              <Wallet className="size-5" />
+              <PiggyBank className="size-5" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">Mis Finanzas</span>
+            <span className="text-lg font-semibold tracking-tight">Chanchito</span>
           </div>
           <QuickAddButton />
           <nav className="flex flex-col gap-1" aria-label="Secciones">

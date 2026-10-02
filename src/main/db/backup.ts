@@ -94,7 +94,7 @@ export async function createBackup(
 }
 
 /**
- * Verifica que un archivo sea una base de Mis Finanzas sana y que esta versión de la app la
+ * Verifica que un archivo sea una base de Chanchito sana y que esta versión de la app la
  * entienda: integrity_check, tablas esperadas y versión de schema no más nueva que la de la app.
  */
 export function validateBackupFile(file: string): { schemaVersion: number } {
@@ -130,7 +130,7 @@ export function validateBackupFile(file: string): { schemaVersion: number } {
     const reason = err instanceof Error ? err.message : String(err)
     throw new AppError(
       'VALIDATION',
-      `"${basename(file)}" no es un backup válido de Mis Finanzas (${reason}).`,
+      `"${basename(file)}" no es un backup válido de Chanchito (${reason}).`,
     )
   } finally {
     candidate?.close()

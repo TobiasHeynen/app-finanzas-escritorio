@@ -18,7 +18,7 @@ export const test = base.extend<Fixtures>({
   // Playwright exige desestructurar los fixtures aunque no se use ninguno.
   // eslint-disable-next-line no-empty-pattern
   app: async ({}, use) => {
-    const userData = mkdtempSync(join(tmpdir(), 'mis-finanzas-e2e-'))
+    const userData = mkdtempSync(join(tmpdir(), 'chanchito-e2e-'))
     const args = ['.', `--user-data-dir=${userData}`]
     if (process.platform === 'linux') args.push('--no-sandbox')
     const app = await electron.launch({ args, env: { ...process.env, NODE_ENV: 'production' } })
@@ -28,7 +28,7 @@ export const test = base.extend<Fixtures>({
   },
   page: async ({ app }, use) => {
     const page = await app.firstWindow()
-    await page.waitForSelector('text=Mis Finanzas')
+    await page.waitForSelector('text=Chanchito')
     await use(page)
   },
 })

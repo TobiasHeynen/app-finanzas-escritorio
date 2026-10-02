@@ -1,4 +1,6 @@
 import { app, BrowserWindow, dialog, Menu } from 'electron'
+import { existsSync } from 'node:fs'
+import { join } from 'node:path'
 import { bootstrapDatabase } from './db/bootstrap'
 import { SchemaTooNewError } from './db/migrate'
 import { createRepos } from './repositories'
@@ -14,6 +16,14 @@ import { createBackup } from './db/backup'
 
 // Locale de Chromium en es-AR: inputs de fecha dd/mm/aaaa y textos nativos en español.
 app.commandLine.appendSwitch('lang', 'es-AR')
+
+// La app antes se llamaba "Mis Finanzas" y sus datos quedaban en esa carpeta de userData. Si ya hay
+// datos ahí y todavía no en la carpeta nueva, se sigue usando la vieja para no perder nada.
+// Tiene que ir antes del lock de instancia única, que vive en userData.
+if (!app.commandLine.hasSwitch('user-data-dir') && !existsSync(dbPath())) {
+  const legacy = join(app.getPath('appData'), 'Mis Finanzas')
+  if (existsSync(join(legacy, 'finanzas.db'))) app.setPath('userData', legacy)
+}
 
 let mainWindow: BrowserWindow | null = null
 let services: Services | null = null
@@ -43,7 +53,8 @@ if (!app.requestSingleInstanceLock()) {
   })
 
   void app.whenReady().then(async () => {
-    app.setAppUserModelId('ar.tobiasheynen.misfinanzas')
+    // En el paquete de la Store el AppUserModelID lo define el manifiesto.
+    if (!process.windowsStore) app.setAppUserModelId('ar.tobiasheynen.chanchito')
     if (app.isPackaged) Menu.setApplicationMenu(null)
 
     try {

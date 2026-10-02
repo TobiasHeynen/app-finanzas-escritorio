@@ -78,7 +78,7 @@ export function createBackupActions(db: Db) {
     },
     async restoreFromFile(): Promise<{ restarting: boolean }> {
       const options: Electron.OpenDialogOptions = {
-        title: 'Elegí un backup de Mis Finanzas',
+        title: 'Elegí un backup de Chanchito',
         defaultPath: backupsDir(),
         properties: ['openFile'],
         filters: [{ name: 'Base de datos', extensions: ['db', 'sqlite'] }],

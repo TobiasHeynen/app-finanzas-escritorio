@@ -113,7 +113,7 @@ export function createExportService({ repos }: ServiceContext) {
 
   async function buildXlsx(data: ExportData): Promise<Buffer> {
     const wb = new ExcelJS.Workbook()
-    wb.creator = 'Mis Finanzas'
+    wb.creator = 'Chanchito'
     wb.created = new Date()
     const { subs, goals } = lookups()
     const index = new Map(data.months.map((m, i) => [m, i]))
@@ -127,7 +127,7 @@ export function createExportService({ repos }: ServiceContext) {
       summary.getColumn(c).width = 15
       summary.getColumn(c).numFmt = ARS_FORMAT
     }
-    const titleRow = summary.addRow([`Mis Finanzas · ${data.title}`])
+    const titleRow = summary.addRow([`Chanchito · ${data.title}`])
     titleRow.font = { bold: true, size: 14 }
     summary.addRow([])
 
@@ -336,7 +336,7 @@ export function createExportService({ repos }: ServiceContext) {
     /** Arma el archivo pedido: nombre sugerido y contenido. */
     async build(req: ExportRequest): Promise<{ filename: string; content: Buffer | string }> {
       const data = load(req)
-      const filename = `mis-finanzas-${req.period}.${req.format}`
+      const filename = `chanchito-${req.period}.${req.format}`
       return {
         filename,
         content: req.format === 'xlsx' ? await buildXlsx(data) : buildCsv(data),

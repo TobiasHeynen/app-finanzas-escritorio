@@ -13,7 +13,7 @@ const shared = resolve(__dirname, 'src/shared')
  */
 function cspPlugin(): Plugin {
   return {
-    name: 'mis-finanzas:csp',
+    name: 'chanchito:csp',
     transformIndexHtml(html, ctx) {
       const isDev = Boolean(ctx.server)
       const csp = [

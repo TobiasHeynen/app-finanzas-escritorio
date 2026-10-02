@@ -1,9 +1,9 @@
 {
-  "name": "mis-finanzas",
-  "productName": "Mis Finanzas",
+  "name": "chanchito",
+  "productName": "Chanchito",
   "version": "0.1.0",
   "private": true,
-  "description": "App de escritorio para control de gastos personales",
+  "description": "Chanchito: tus finanzas personales mes a mes, 100% local",
   "author": "Tobias Heynen",
   "license": "PolyForm-Noncommercial-1.0.0",
   "main": "./out/main/index.js",
@@ -21,6 +21,7 @@
     "test": "node scripts/run-vitest.mjs run",
     "test:watch": "node scripts/run-vitest.mjs",
     "package": "npm run build && electron-builder --win --x64",
+    "package:store": "npm run build && electron-builder --win appx --x64",
     "test:e2e": "electron-vite build && playwright test"
   },
   "devDependencies": {

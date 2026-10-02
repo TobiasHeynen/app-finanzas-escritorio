@@ -73,7 +73,7 @@ describe('backups', () => {
     db.close()
   })
 
-  it('rechaza archivos que no son una base de Mis Finanzas o de una versión más nueva', () => {
+  it('rechaza archivos que no son una base de Chanchito o de una versión más nueva', () => {
     const dir = tempDir()
     const garbage = join(dir, 'basura.db')
     writeFileSync(garbage, 'esto no es sqlite')

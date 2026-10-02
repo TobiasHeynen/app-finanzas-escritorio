@@ -8,7 +8,7 @@ export function createMainWindow(): BrowserWindow {
     minWidth: 1100,
     minHeight: 700,
     show: false,
-    title: 'Mis Finanzas',
+    title: 'Chanchito',
     autoHideMenuBar: true,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#16181d' : '#fafbfc',
     webPreferences: {
