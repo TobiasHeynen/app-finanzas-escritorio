@@ -1,114 +1,97 @@
-import { useState, type ReactNode } from 'react'
-import { Pressable, StyleSheet, Text, View } from 'react-native'
-import { useQuery } from '@tanstack/react-query'
-import { ChevronLeft, ChevronRight } from 'lucide-react-native'
-import { formatMoney } from '@shared/money'
-import { addMonths, currentMonth, formatMonthTitle } from '@shared/months'
+import { useMemo, useState } from 'react'
+import { StyleSheet, View } from 'react-native'
+import { Receipt } from 'lucide-react-native'
+import { currentMonth } from '@shared/months'
+import { EmptyState } from '@/components/empty-state'
+import { Fab } from '@/components/fab'
+import { MonthStepper } from '@/components/month-stepper'
 import { Screen } from '@/components/screen'
-import { keys } from '@/lib/query'
-import { radius, space, useColors, type Colors } from '@/lib/theme'
-import { useServices } from '@/lib/use-services'
+import { Button, Card, Chip, SectionTitle } from '@/components/ui'
+import { ExpenseList } from '@/features/gastos/expense-list'
+import { openNewExpense } from '@/features/gastos/open-expense'
+import { CategoryBars } from '@/features/inicio/category-bars'
+import { SummaryCards } from '@/features/inicio/summary-cards'
+import { useCatalog } from '@/lib/catalog'
+import { useMonthOverview } from '@/lib/movements'
+import { space, useColors } from '@/lib/theme'
 
 export default function InicioScreen() {
-  const colors = useColors()
-  const services = useServices()
+  const c = useColors()
   const [month, setMonth] = useState(() => currentMonth())
-  const { data } = useQuery({
-    queryKey: keys.summary(month),
-    queryFn: () => services.summary.overview(month),
-  })
-  const summary = data?.summary
+  const [categoryId, setCategoryId] = useState<number | null>(null)
+  const { data } = useMonthOverview(month)
+  const { categoryById } = useCatalog()
+  const isCurrent = month === currentMonth()
+  const newDefaults = isCurrent ? undefined : { purchaseDate: `${month}-01` }
+
+  const filtered = useMemo(() => {
+    if (!data) return { expenses: [], projected: [] }
+    if (categoryId === null) return data
+    return {
+      expenses: data.expenses.filter((e) => e.categoryId === categoryId),
+      projected: data.projected.filter((e) => e.categoryId === categoryId),
+    }
+  }, [data, categoryId])
+
+  const empty = data !== undefined && data.expenses.length === 0 && data.projected.length === 0
+  const filterName = categoryId !== null ? categoryById.get(categoryId)?.name : undefined
 
   return (
-    <Screen>
+    <Screen bottomSpace overlay={<Fab label="Gasto" onPress={() => openNewExpense(newDefaults)} />}>
       <View style={styles.header}>
-        <IconButton label="Mes anterior" onPress={() => setMonth((m) => addMonths(m, -1))}>
-          <ChevronLeft color={colors.foreground} size={22} />
-        </IconButton>
-        <Text style={[styles.month, { color: colors.foreground }]}>{formatMonthTitle(month)}</Text>
-        <IconButton label="Mes siguiente" onPress={() => setMonth((m) => addMonths(m, 1))}>
-          <ChevronRight color={colors.foreground} size={22} />
-        </IconButton>
+        <MonthStepper
+          value={month}
+          onChange={(m) => {
+            setMonth(m)
+            setCategoryId(null)
+          }}
+        />
+        {!isCurrent ? (
+          <Button
+            label="Hoy"
+            variant="ghost"
+            size="sm"
+            onPress={() => {
+              setMonth(currentMonth())
+              setCategoryId(null)
+            }}
+          />
+        ) : null}
       </View>
 
-      {summary ? (
-        <>
-          <View style={[styles.hero, { backgroundColor: colors.primary }]}>
-            <Text style={[styles.heroLabel, { color: colors.primaryForeground }]}>Disponible</Text>
-            <Text style={[styles.heroValue, { color: colors.primaryForeground }]}>
-              {formatMoney(summary.availableCents)}
-            </Text>
-          </View>
-          <View style={styles.grid}>
-            <Tile colors={colors} label="Ingresos" value={summary.incomeCents} />
-            <Tile colors={colors} label="Gastos" value={summary.spentCents} />
-            <Tile colors={colors} label="Ahorro" value={summary.savedCents} />
-          </View>
-          {summary.pendingCount > 0 ? (
-            <Text style={{ color: colors.pending }}>
-              {summary.pendingCount === 1
-                ? '1 gasto pendiente de cargar'
-                : `${String(summary.pendingCount)} gastos pendientes de cargar`}
-            </Text>
-          ) : null}
-        </>
+      {data ? <SummaryCards summary={data.summary} /> : null}
+
+      {data && data.summary.byCategory.some((r) => r.amountCents > 0) ? (
+        <Card style={{ gap: space(3) }}>
+          <SectionTitle>Por categoría</SectionTitle>
+          <CategoryBars summary={data.summary} selected={categoryId} onSelect={setCategoryId} />
+        </Card>
       ) : null}
+
+      <View style={{ gap: space(2) }}>
+        <SectionTitle
+          right={
+            filterName ? (
+              <Chip label={`${filterName} ✕`} selected onPress={() => setCategoryId(null)} />
+            ) : null
+          }
+        >
+          Gastos
+        </SectionTitle>
+        {empty ? (
+          <EmptyState
+            icon={<Receipt color={c.mutedForeground} size={22} />}
+            title="Todavía no cargaste gastos este mes."
+            description="Tocá “+ Gasto” para cargar el primero."
+          />
+        ) : (
+          <ExpenseList expenses={filtered.expenses} projected={filtered.projected} month={month} />
+        )}
+      </View>
     </Screen>
-  )
-}
-
-function IconButton({
-  label,
-  onPress,
-  children,
-}: {
-  label: string
-  onPress: () => void
-  children: ReactNode
-}) {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      hitSlop={8}
-      onPress={onPress}
-      style={({ pressed }) => [styles.iconButton, pressed && { opacity: 0.5 }]}
-    >
-      {children}
-    </Pressable>
-  )
-}
-
-function Tile({ colors, label, value }: { colors: Colors; label: string; value: number }) {
-  return (
-    <View style={[styles.tile, { backgroundColor: colors.card, borderColor: colors.border }]}>
-      <Text style={[styles.tileLabel, { color: colors.mutedForeground }]}>{label}</Text>
-      <Text
-        style={[styles.tileValue, { color: colors.foreground }]}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-      >
-        {formatMoney(value, 'ARS', { decimals: 'never' })}
-      </Text>
-    </View>
   )
 }
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  month: { fontSize: 20, fontWeight: '700' },
-  iconButton: { padding: space(2) },
-  hero: { borderRadius: radius.xl, padding: space(5), gap: space(1) },
-  heroLabel: { fontSize: 14, fontWeight: '500', opacity: 0.9 },
-  heroValue: { fontSize: 32, fontWeight: '700', fontVariant: ['tabular-nums'] },
-  grid: { flexDirection: 'row', gap: space(3) },
-  tile: {
-    flex: 1,
-    borderRadius: radius.lg,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: space(3),
-    gap: space(1),
-  },
-  tileLabel: { fontSize: 12, fontWeight: '500' },
-  tileValue: { fontSize: 16, fontWeight: '600', fontVariant: ['tabular-nums'] },
 })

@@ -7,8 +7,3 @@ export const queryClient = new QueryClient({
     mutations: { retry: false },
   },
 })
-
-export const keys = {
-  summary: (month: string) => ['summary', month] as const,
-  all: ['summary'] as const,
-}
