@@ -34,3 +34,44 @@ jobs:
           name: chanchito-store
           path: release/*/chanchito-*.appx
           if-no-files-found: error
+
+  android:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_NO_TELEMETRY: 1
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            apps/mobile/package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+          cache-dependency-path: apps/mobile/package-lock.json
+      # La raíz trae la suite de core y las reglas de lint que comparten las dos apps.
+      - run: npm ci
+      - name: Lógica compartida a través del adaptador del celu
+        run: npm run test:core-expo
+      - run: npm ci
+        working-directory: apps/mobile
+      - run: npm run lint
+        working-directory: apps/mobile
+      - run: npm run typecheck
+        working-directory: apps/mobile
+      - name: APK de prueba (firmado con la clave de debug)
+        working-directory: apps/mobile
+        run: |
+          npx expo prebuild --platform android --no-install
+          cd android
+          ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
+      - uses: actions/upload-artifact@v5
+        with:
+          name: chanchito-android-apk
+          path: apps/mobile/android/app/build/outputs/apk/release/*.apk
+          if-no-files-found: error
