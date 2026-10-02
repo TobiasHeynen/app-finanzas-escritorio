@@ -42,7 +42,7 @@ appx:
   publisherDisplayName: Tobias Heynen
   displayName: Chanchito
   applicationId: Chanchito
-  backgroundColor: '#db2777'
+  backgroundColor: '#047857'
   languages: [es-AR]
   artifactName: chanchito-${version}.${ext}
 # better-sqlite3 13 es N-API y trae prebuilds (win32-x64 incluido): no hace falta recompilar.
