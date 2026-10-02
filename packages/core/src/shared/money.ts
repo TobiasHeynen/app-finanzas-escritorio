@@ -63,25 +63,6 @@ export function parseMoney(input: string, options: ParseMoneyOptions = {}): Cent
   return negative && cents !== 0 ? -cents : cents
 }
 
-const formatters = new Map<string, Intl.NumberFormat>()
-
-function formatter(currency: Currency, decimals: boolean, signDisplay: 'auto' | 'exceptZero') {
-  const key = `${currency}|${decimals}|${signDisplay}`
-  let f = formatters.get(key)
-  if (!f) {
-    f = new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency,
-      currencyDisplay: currency === 'USD' ? 'code' : 'symbol',
-      minimumFractionDigits: decimals ? 2 : 0,
-      maximumFractionDigits: decimals ? 2 : 0,
-      signDisplay,
-    })
-    formatters.set(key, f)
-  }
-  return f
-}
-
 /** Representación decimal exacta como string ("-1234.05"), sin pasar por float. */
 export function centsToDecimalString(cents: Cents): string {
   assertCents(cents)
@@ -99,9 +80,15 @@ export interface FormatMoneyOptions {
   showPlus?: boolean
 }
 
+/** "1234567" → "1.234.567" */
+function groupThousands(units: number): string {
+  return String(units).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+}
+
 /**
- * Formatea centavos para mostrar: "$ 1.234,56", "USD 10,00".
- * Usa Intl.NumberFormat('es-AR') con el valor como string decimal, así no hay error de float.
+ * Formatea centavos para mostrar: "$ 1.234,56", "USD 10,00" (con espacio duro, como Intl es-AR).
+ * Se arma a mano y no con Intl.NumberFormat: así da exactamente lo mismo en la PC y en el motor de JS
+ * del celu (Hermes), y nunca pasa por float. Un test lo compara contra Intl.
  * Con decimals 'never' se redondea al entero más cercano (sólo para mostrar).
  */
 export function formatMoney(
@@ -109,12 +96,17 @@ export function formatMoney(
   currency: Currency = 'ARS',
   options: FormatMoneyOptions = {},
 ): string {
+  assertCents(cents)
   const mode = options.decimals ?? 'auto'
   const withDecimals = mode === 'always' || (mode === 'auto' && cents % 100 !== 0)
-  const signDisplay = options.showPlus ? 'exceptZero' : 'auto'
-  const value = withDecimals ? centsToDecimalString(cents) : String(roundToUnits(cents))
-  // Intl acepta strings decimales y los formatea sin convertirlos a float.
-  return formatter(currency, withDecimals, signDisplay).format(value as unknown as number)
+  const abs = Math.abs(cents)
+  const units = withDecimals ? Math.trunc(abs / 100) : Math.abs(roundToUnits(cents))
+  const body = withDecimals
+    ? `${groupThousands(units)},${String(abs % 100).padStart(2, '0')}`
+    : groupThousands(units)
+  const isZero = withDecimals ? cents === 0 : units === 0
+  const sign = isZero ? '' : cents < 0 ? '-' : options.showPlus ? '+' : ''
+  return `${sign}${currency === 'USD' ? 'USD' : '$'}\u00a0${body}`
 }
 
 /** Formato para precargar un input editable: "1.234,56" (sin símbolo). Pendiente → "". */
@@ -124,7 +116,7 @@ export function formatMoneyInput(cents: Cents | null): string {
   const abs = Math.abs(cents)
   const int = Math.trunc(abs / 100)
   const frac = abs % 100
-  const intText = String(int).replace(/\B(?=(\d{3})+(?!\d))/g, '.')
+  const intText = groupThousands(int)
   const text = frac === 0 ? intText : `${intText},${String(frac).padStart(2, '0')}`
   return negative ? `-${text}` : text
 }
