@@ -36,16 +36,24 @@ Tiene su propio `package.json`/`node_modules` (no hay workspaces): `npm ci` en l
 
 - Core se usa tal cual: `src/lib/services.ts` abre `finanzas.db` con expo-sqlite, lo envuelve con
   `wrapSyncSqlite` (`packages/core/src/db/sync-adapter.ts`) y llama a `initDatabase` + `createServices`.
-  En la UI: `useServices()` + TanStack Query.
+- La UI usa **los mismos canales que la PC**: `call(canal, input)` (`src/lib/api.ts`) pasa por el `dispatch` de
+  core (zod) y los handlers de `packages/core/src/api/handlers.ts`, sin IPC. Mismos hooks (`useApiQuery`,
+  `useApiMutation`, `keys`, `movementKeys`) que el renderer. Los canales de plataforma (backups, exportar) se
+  suman con `addHandlers`.
+- Estructura: `src/app/` rutas de expo-router (pestañas en `(tabs)/`, formularios como pantallas modales),
+  `src/features/<pantalla>/`, `src/components/` (ui.tsx con Button/Card/Chip/TextField, Money, MoneyField,
+  DateField con calendario propio, toaster con "Deshacer"), `src/lib/`.
 - Las migraciones se leen de `packages/core/src/db/migrations.generated.ts` (Metro no tiene
   `import.meta.glob`): después de tocar un `.sql`, `node scripts/gen-migrations.mjs` (un test avisa).
 - `metro.config.js` resuelve los imports de core desde el `node_modules` de la app, nunca desde la raíz.
 - Comandos (en `apps/mobile`): `npm run lint`, `npm run typecheck`, `npx expo export --platform android`
-  (verifica el bundle), `npm start`. Para agregar paquetes, la versión exacta sale de
+  (verifica el bundle), `npm start`, `npm run test:e2e` (export web + Playwright en `e2e/`; en el entorno
+  remoto, con `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium`). El `postinstall` corrige un bug de expo-sqlite
+  web (resultados de más de 255 bytes) que sólo afecta a la vista previa. Para agregar paquetes, la versión exacta sale de
   `node_modules/expo/bundledNativeModules.json` (`expo install` necesita la API de Expo, bloqueada en remoto).
 - Vista previa web (sólo para desarrollo): `npx expo export --platform web` y servir `dist/` con
   `Cross-Origin-Opener-Policy: same-origin` y `Cross-Origin-Embedder-Policy: require-corp`.
-- CI (job `android`, ubuntu): `test:core-expo`, lint, typecheck, `expo prebuild` + `gradlew assembleRelease`
+- CI (job `android`, ubuntu): `test:core-expo`, lint, typecheck, e2e web, `expo prebuild` + `gradlew assembleRelease`
   → artifact `chanchito-android-apk` (firmado con la clave de debug: sólo para probar).
 
 ## Stack
