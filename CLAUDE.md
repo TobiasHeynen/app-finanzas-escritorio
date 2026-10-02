@@ -180,6 +180,11 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
 - Restaurar: valida el archivo (`integrity_check`, tablas, versión de schema ≤ la de la app), hace un backup
   `pre-restauracion`, cierra la base, reemplaza el archivo (borra `-wal`/`-shm`) y hace `app.relaunch()`.
   El renderer sólo manda el nombre del backup (validado por regex) o pide abrir el diálogo nativo.
+- Nombre, rotación y validación de backups son de core (`@core/db/backup-rules`), así un backup de la PC se
+  restaura en el celu y al revés. En el celu (`apps/mobile/src/lib/backups.ts`): el backup es la imagen de la base
+  (`serializeSync`, marcada sin WAL) en `<documentos>/backups`; restaurar valida en memoria
+  (`deserializeDatabaseSync`), copia con `backupDatabaseSync` sobre la base abierta y recarga la app. Se comparten
+  con expo-sharing y se eligen con expo-document-picker.
 - Exportar: xlsx (hojas Resumen, Gastos, Ingresos, Ahorros; montos numéricos con formato de moneda) y CSV de
   gastos (`;`, coma decimal, UTF-8 con BOM, para Excel en español). Los gastos pendientes no suman.
   Los datos, el resumen y el CSV salen de `@core/services/export-data`; la PC arma el xlsx con exceljs y el celu
