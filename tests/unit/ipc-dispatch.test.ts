@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { dispatch } from '@main/ipc/dispatch'
+import { dispatch } from '@core/api/dispatch'
 import { AppError } from '@shared/errors'
 import { IPC_CHANNELS } from '@shared/ipc/channels'
 import { ipcContract } from '@shared/ipc/contract'

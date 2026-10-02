@@ -67,6 +67,7 @@ caso los componentes se escriben a mano en `src/renderer/src/components/ui/` cop
 ```
 packages/core/src/        lógica compartida PC/celu (alias @core y @shared). ESLint le prohíbe importar
 │                         electron, better-sqlite3, exceljs, node:*, react-native o expo
+├─ api/                   dispatch (valida con zod → handler → IpcResult) y handlers de core por canal
 ├─ db/                    sql.ts (interfaz SqlDb), migrations/NNN_*.sql, migrate, seed, init (migra+siembra+purga)
 ├─ repositories/          SQL plano sobre SqlDb
 ├─ services/              reglas de negocio: expenses, recurring, incomes, summary, cards, savings, report
@@ -86,9 +87,8 @@ src/                      app de escritorio (Electron)
 │  ├─ window.ts           BrowserWindow con webPreferences seguras
 │  ├─ security.ts         permisos, navegación, window.open, origen confiable
 │  ├─ ipc/
-│  │  ├─ dispatch.ts      valida con zod → handler → IpcResult (puro, testeable)
 │  │  ├─ register.ts      ipcMain.handle por canal + chequeo del frame emisor
-│  │  └─ handlers.ts      mapa canal → handler (llama a services)
+│  │  └─ handlers.ts      los de core + los de la PC (app, export, backups)
 │  ├─ backups.ts          backup antes de migrar, acciones de backup/restaurar (diálogos, relaunch)
 │  ├─ export-file.ts      diálogo "Guardar como" y escritura del xlsx/csv
 │  ├─ db/                 connection (better-sqlite3 + PRAGMAs), bootstrap (abre + init de core),
@@ -111,7 +111,8 @@ src/                      app de escritorio (Electron)
 
 1. Agregar el nombre en `packages/core/src/shared/ipc/channels.ts` (`dominio:accion`).
 2. Agregar `{ input, output }` en `packages/core/src/shared/ipc/contract.ts`. Inputs con `.strict()`.
-3. Implementar el handler en `src/main/ipc/handlers.ts` (delegando en un service).
+3. Implementar el handler en `packages/core/src/api/handlers.ts` (delegando en un service), o en
+   `src/main/ipc/handlers.ts` y en el celu si depende de la plataforma (`PlatformChannel`).
 4. En el renderer: `call('dominio:accion', input)` dentro de un hook de TanStack Query en `lib/` o en la feature.
    El typecheck falla si falta el handler; un test verifica que la lista blanca coincida con el contrato.
 
