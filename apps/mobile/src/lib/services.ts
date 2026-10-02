@@ -4,9 +4,8 @@ import { wrapSyncSqlite } from '@core/db/sync-adapter'
 import { createRepos } from '@core/repositories'
 import { createServices, type Services } from '@core/services'
 import { systemClock } from '@core/services/context'
-
-/** Mismo nombre de archivo que en la PC: un backup de un lado se restaura en el otro. */
-export const DB_NAME = 'finanzas.db'
+import { initApi } from './api'
+import { DB_NAME } from './db-name'
 
 export interface AppServices {
   services: Services
@@ -27,6 +26,7 @@ export function getAppServices(): AppServices {
   const { seeded } = initDatabase(db)
   const services = createServices({ db, repos: createRepos(db), clock: systemClock })
   services.recurring.generateDue()
+  initApi(services)
   current = { services, seeded }
   return current
 }

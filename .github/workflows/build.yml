@@ -64,6 +64,11 @@ jobs:
         working-directory: apps/mobile
       - run: npm run typecheck
         working-directory: apps/mobile
+      # Playwright es el de la raíz: se instala el navegador desde ahí.
+      - run: npx playwright install --with-deps chromium
+      - name: E2E de las pantallas (export web + Playwright)
+        working-directory: apps/mobile
+        run: npm run test:e2e
       - name: APK de prueba (firmado con la clave de debug)
         working-directory: apps/mobile
         run: |

@@ -7,3 +7,5 @@ android/
 ios/
 *.apk
 *.aab
+dist-web/
+test-results/

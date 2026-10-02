@@ -35,7 +35,9 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "export:android": "expo export --platform android",
-    "export:web": "expo export --platform web"
+    "export:web": "expo export --platform web",
+    "postinstall": "node scripts/fix-expo-sqlite-web.mjs",
+    "test:e2e": "expo export --platform web --output-dir dist-web && playwright test -c e2e/playwright.config.ts"
   },
   "private": true,
   "description": "Chanchito para Android (Expo)",

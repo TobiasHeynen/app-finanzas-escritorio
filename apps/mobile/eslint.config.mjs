@@ -6,13 +6,25 @@ import tseslint from 'typescript-eslint'
 import base from '../../eslint.config.mjs'
 
 export default [
-  { ignores: ['node_modules/**', '.expo/**', 'dist/**', 'android/**', 'ios/**', 'expo-env.d.ts'] },
+  {
+    ignores: [
+      'node_modules/**',
+      '.expo/**',
+      'dist/**',
+      'dist-web/**',
+      'test-results/**',
+      'android/**',
+      'ios/**',
+      'expo-env.d.ts',
+    ],
+  },
   ...base,
   {
     files: ['src/**/*.{ts,tsx}'],
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
   },
+  { files: ['e2e/**/*.mjs'], languageOptions: { globals: globals.node } },
   {
     files: ['metro.config.js'],
     ...tseslint.configs.disableTypeChecked,

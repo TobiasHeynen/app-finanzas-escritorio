@@ -1,6 +1,6 @@
 import { ipcMain, type WebFrameMain } from 'electron'
 import { IPC_CHANNELS, type IpcChannel } from '@shared/ipc/channels'
-import { dispatch, type IpcHandler, type IpcHandlers } from './dispatch'
+import { dispatch, type IpcHandler, type IpcHandlers } from '@core/api/dispatch'
 import { isTrustedRendererUrl } from '../security'
 
 export function registerIpcHandlers(handlers: IpcHandlers): void {

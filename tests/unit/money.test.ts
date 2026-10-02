@@ -124,6 +124,38 @@ describe('formatMoney', () => {
   it('rechaza montos no enteros', () => {
     expect(() => formatMoney(1.5)).toThrow(RangeError)
   })
+
+  it('da lo mismo que Intl es-AR (en el celu no se usa Intl)', () => {
+    const values = [0, 1, 49, 50, 99, 100, 150, -30, -50, -150, 123456, -123456, 100000000]
+    for (let i = 0; i < 300; i++)
+      values.push(Math.round((Math.random() - 0.3) * 10 ** (2 + (i % 11))))
+    for (const currency of ['ARS', 'USD'] as const) {
+      for (const decimals of ['auto', 'always', 'never'] as const) {
+        for (const showPlus of [false, true]) {
+          for (const cents of values) {
+            const withDecimals = decimals === 'always' || (decimals === 'auto' && cents % 100 !== 0)
+            const expected = new Intl.NumberFormat('es-AR', {
+              style: 'currency',
+              currency,
+              currencyDisplay: currency === 'USD' ? 'code' : 'symbol',
+              minimumFractionDigits: withDecimals ? 2 : 0,
+              maximumFractionDigits: withDecimals ? 2 : 0,
+              roundingMode: 'halfExpand',
+              signDisplay: showPlus ? 'exceptZero' : 'auto',
+            }).format(
+              (withDecimals
+                ? centsToDecimalString(cents)
+                : String(cents / 100)) as unknown as number,
+            )
+            expect(formatMoney(cents, currency, { decimals, showPlus }), `${cents}`).toBe(
+              // Intl muestra "-$ 0" cuando un negativo redondea a 0; acá queda "$ 0" (como antes).
+              expected.replace(/^-(\$|USD)\u00a00$/, '$1\u00a00'),
+            )
+          }
+        }
+      }
+    }
+  })
 })
 
 describe('formatMoneyInput y centsToDecimalString', () => {

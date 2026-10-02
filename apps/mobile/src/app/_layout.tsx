@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar'
 import { getAppServices, type AppServices } from '@/lib/services'
 import { storageReady } from '@/lib/storage-ready'
 import { queryClient } from '@/lib/query'
-import { ServicesContext } from '@/lib/use-services'
+import { Toaster } from '@/components/toaster'
 import { useColors, useIsDark, type Colors } from '@/lib/theme'
 
 type Boot = { ok: true; app: AppServices } | { ok: false; message: string } | null
@@ -66,11 +66,16 @@ export default function RootLayout() {
     <ThemeProvider value={theme}>
       <StatusBar style={dark ? 'light' : 'dark'} />
       {state === null ? null : state.ok ? (
-        <ServicesContext value={state.app.services}>
-          <QueryClientProvider client={queryClient}>
-            <Stack screenOptions={{ headerShown: false }} />
-          </QueryClientProvider>
-        </ServicesContext>
+        <QueryClientProvider client={queryClient}>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen
+              name="gasto"
+              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+            />
+          </Stack>
+          <Toaster bottomOffset={64} />
+        </QueryClientProvider>
       ) : (
         <BootError message={state.message} colors={colors} />
       )}
