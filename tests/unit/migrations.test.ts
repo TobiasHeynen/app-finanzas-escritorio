@@ -45,7 +45,7 @@ describe('migraciones', () => {
       `INSERT INTO expenses (subcategory_id, payment_method_id, purchase_date, charge_month, amount_cents)
        VALUES (1, 1, '2026-10-01', '2026-10', 1000)`,
     ).run()
-    expect(migrate(db)).toEqual([2])
+    expect(migrate(db)).toEqual(migrations.slice(1).map((m) => m.version))
     expect(
       db.prepare('SELECT amount_cents, group_id, paid_by_member_id FROM expenses').get(),
     ).toEqual({ amount_cents: 1000, group_id: null, paid_by_member_id: null })

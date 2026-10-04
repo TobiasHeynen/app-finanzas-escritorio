@@ -23,7 +23,7 @@ export function initDatabase(db: SqlDb): InitResult {
 export function purgeSoftDeleted(db: SqlDb, now = new Date()): void {
   const cutoff = new Date(now.getTime() - SOFT_DELETE_RETENTION_DAYS * 86_400_000).toISOString()
   db.transaction(() => {
-    for (const table of ['expenses', 'incomes', 'savings_movements']) {
+    for (const table of ['expenses', 'incomes', 'savings_movements', 'group_settlements']) {
       db.prepare(`DELETE FROM ${table} WHERE deleted_at IS NOT NULL AND deleted_at < ?`).run(cutoff)
     }
     db.prepare(

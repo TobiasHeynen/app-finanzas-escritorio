@@ -229,6 +229,10 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
   puede tener grupo + quién pagó (`group_id` + `paid_by_member_id`, los dos o ninguno). El gasto suma **completo**
   al mes (es la plata que salió); el grupo muestra lo que te deben. Reparto en partes iguales por defecto.
   Sacar a alguien del grupo lo archiva: sus gastos siguen diciendo que pagó esa persona.
+  Reparto en `expense_shares` (`share_cents` NULL = parte igual; el resto de centavos a la primera persona en el
+  orden del grupo); a mano tiene que sumar el monto y si después cambia el monto vuelve a partes iguales. Cuotas y
+  recurrentes se reparten iguales entre las personas activas. "Saldar" (`group_settlements`) sólo mueve el saldo
+  del grupo: no toca gastos ni disponible.
 
 ## Convenciones de código
 

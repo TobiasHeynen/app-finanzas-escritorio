@@ -62,6 +62,16 @@ export function createCoreHandlers<D extends SqlDb>(services: Services<D>): Core
     'groups:create': (input) => services.groups.create(input),
     'groups:update': ({ id, data }) => services.groups.update(id, data),
     'groups:archive': ({ id, archived }) => services.groups.setArchived(id, archived),
+    'groups:balance': ({ groupId }) => services.groups.balance(groupId),
+    'groups:settle': (input) => services.groups.settle(input),
+    'groups:removeSettlement': ({ id }) => {
+      services.groups.removeSettlement(id)
+      return ok
+    },
+    'groups:restoreSettlement': ({ id }) => {
+      services.groups.restoreSettlement(id)
+      return ok
+    },
 
     // Mes
     'month:overview': ({ month }) => services.summary.overview(month),

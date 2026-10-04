@@ -18,6 +18,7 @@ const MODALS = [
   'config/categoria',
   'config/medio',
   'config/grupo',
+  'saldar',
 ]
 
 type Boot = { ok: true; app: AppServices } | { ok: false; message: string } | null

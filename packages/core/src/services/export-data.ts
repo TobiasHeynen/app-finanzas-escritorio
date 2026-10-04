@@ -25,6 +25,9 @@ export interface ExpenseLine {
   method: string
   installment: string
   amount: Cents | null
+  /** Nombre del grupo y de quién pagó; vacíos si el gasto es personal. */
+  group: string
+  paidBy: string
 }
 
 /** Una fila del resumen: valores por mes y, si hay más de un mes, total y promedio. */
@@ -51,6 +54,8 @@ export interface ExportLookups {
   subs: Map<number, { sub: string; cat: string }>
   methods: Map<number, string>
   goals: Map<number, string>
+  groups: Map<number, string>
+  members: Map<number, string>
 }
 
 export type ExportDataService = ReturnType<typeof createExportDataService>
@@ -63,7 +68,10 @@ export function createExportDataService({ repos }: Pick<ServiceContext, 'repos'>
     )
     const methods = new Map(repos.paymentMethods.list().map((m) => [m.id, m.name]))
     const goals = new Map(repos.savings.listGoals().map((g) => [g.id, g.name]))
-    return { subs, methods, goals }
+    const groupList = repos.groups.list()
+    const groups = new Map(groupList.map((g) => [g.id, g.name]))
+    const members = new Map(groupList.flatMap((g) => g.members.map((m) => [m.id, m.name])))
+    return { subs, methods, goals, groups, members }
   }
 
   function load(req: ExportRequest): ExportData {
@@ -79,7 +87,10 @@ export function createExportDataService({ repos }: Pick<ServiceContext, 'repos'>
     }
   }
 
-  function expenseLines(data: ExportData, { subs, methods } = lookups()): ExpenseLine[] {
+  function expenseLines(
+    data: ExportData,
+    { subs, methods, groups, members } = lookups(),
+  ): ExpenseLine[] {
     return data.expenses.map((e) => ({
       date: e.purchaseDate,
       month: e.chargeMonth,
@@ -91,6 +102,8 @@ export function createExportDataService({ repos }: Pick<ServiceContext, 'repos'>
         ? `${String(e.installment.number)}/${String(e.installment.count)}`
         : '',
       amount: e.amountCents,
+      group: e.group ? (groups.get(e.group.groupId) ?? '') : '',
+      paidBy: e.group ? (members.get(e.group.paidByMemberId) ?? '') : '',
     }))
   }
 
@@ -181,6 +194,8 @@ export function createExportDataService({ repos }: Pick<ServiceContext, 'repos'>
       'Cuota',
       'Monto',
       'Estado',
+      'Grupo',
+      'Pagó',
     ]
     const cell = (v: string) => (/[";\n\r]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v)
     const amount = (c: Cents | null) =>
@@ -196,6 +211,8 @@ export function createExportDataService({ repos }: Pick<ServiceContext, 'repos'>
         l.installment,
         amount(l.amount),
         l.amount === null ? 'Pendiente' : '',
+        l.group,
+        l.paidBy,
       ]
         .map(cell)
         .join(';'),

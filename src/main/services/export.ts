@@ -122,6 +122,8 @@ export function createExportService({ repos }: ServiceContext) {
         { header: 'Cuota', key: 'installment', width: 8 },
         { header: 'Monto', key: 'amount', width: 15, numFmt: ARS_FORMAT },
         { header: 'Estado', key: 'status', width: 11 },
+        { header: 'Grupo', key: 'group', width: 16 },
+        { header: 'Pagó', key: 'paidBy', width: 14 },
       ],
       exportData.expenseLines(data, lookups).map((l) => ({
         ...l,

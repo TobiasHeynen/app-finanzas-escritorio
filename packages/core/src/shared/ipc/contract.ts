@@ -10,6 +10,7 @@ import {
   exportRequestSchema,
   exportResultSchema,
   expenseSchema,
+  groupBalanceSchema,
   groupInputSchema,
   groupSchema,
   idSchema,
@@ -31,6 +32,8 @@ import {
   savingsMovementInputSchema,
   savingsMovementSchema,
   savingsOverviewSchema,
+  settlementInputSchema,
+  settlementSchema,
   subcategorySchema,
   yearReportSchema,
 } from '../schemas'
@@ -102,6 +105,13 @@ export const ipcContract = {
     output: groupSchema,
   },
   'groups:archive': { input: archiveInput, output: groupSchema },
+  'groups:balance': {
+    input: z.object({ groupId: idSchema }).strict(),
+    output: groupBalanceSchema,
+  },
+  'groups:settle': { input: settlementInputSchema, output: settlementSchema },
+  'groups:removeSettlement': { input: idInput, output: ok },
+  'groups:restoreSettlement': { input: idInput, output: ok },
 
   // ---------- Mes ----------
   'month:overview': {
@@ -137,6 +147,7 @@ export const ipcContract = {
         text: z.string().trim().max(100).nullable(),
         categoryId: idSchema.nullable(),
         paymentMethodId: idSchema.nullable(),
+        groupId: idSchema.nullable().optional(),
       })
       .strict(),
     output: z.array(expenseSchema),

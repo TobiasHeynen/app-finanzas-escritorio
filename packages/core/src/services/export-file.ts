@@ -71,7 +71,7 @@ export function buildWorkbook(
 
   const expenses: XlsxSheet = {
     name: 'Gastos',
-    widths: [12, 16, 18, 20, 30, 16, 8, 15, 11],
+    widths: [12, 16, 18, 20, 30, 16, 8, 15, 11, 16, 14],
     table: true,
     rows: [
       header([
@@ -84,6 +84,8 @@ export function buildWorkbook(
         'Cuota',
         'Monto',
         'Estado',
+        'Grupo',
+        'Pagó',
       ]),
       ...service.expenseLines(data, lookups).map((l) => ({
         cells: [
@@ -96,6 +98,8 @@ export function buildWorkbook(
           l.installment,
           { v: l.amount === null ? null : toNumber(l.amount), s: 'ars' as const },
           l.amount === null ? 'Pendiente' : '',
+          l.group,
+          l.paidBy,
         ],
       })),
     ],

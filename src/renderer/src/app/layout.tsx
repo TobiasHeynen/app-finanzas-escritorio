@@ -6,6 +6,7 @@ import {
   House,
   PiggyBank,
   Settings,
+  Users,
 } from 'lucide-react'
 import { cn } from '@renderer/lib/utils'
 import {
@@ -18,6 +19,7 @@ const NAV = [
   { to: '/movimientos', label: 'Movimientos', icon: ArrowLeftRight },
   { to: '/tarjetas', label: 'Tarjetas', icon: CreditCard },
   { to: '/ahorros', label: 'Ahorros', icon: PiggyBank },
+  { to: '/grupos', label: 'Grupos', icon: Users },
   { to: '/reporte', label: 'Reporte', icon: ChartColumnBig },
   { to: '/configuracion', label: 'Configuración', icon: Settings },
 ]
