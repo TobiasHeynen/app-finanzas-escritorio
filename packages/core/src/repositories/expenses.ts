@@ -1,5 +1,5 @@
 import type { SqlDb as Db } from '../db/sql'
-import type { Expense, ExpenseGroup } from '@shared/types'
+import type { Expense, ExpenseGroup, ExpenseSplit } from '@shared/types'
 import type { Month } from '@shared/months'
 import { groupParams, nowIso, notFound, placeholders, toExpenseGroup } from './util'
 
@@ -20,6 +20,8 @@ interface Row {
   notes: string | null
   group_id: number | null
   paid_by_member_id: number | null
+  /** "12:,13:" (partes iguales) o "12:1000,13:3000" (a mano): ver SELECT. */
+  shares: string | null
 }
 
 export interface ExpenseWrite {
@@ -43,10 +45,20 @@ export interface ExpenseFilter {
   text?: string | null
   categoryId?: number | null
   paymentMethodId?: number | null
+  groupId?: number | null
+}
+
+/** Persona de un gasto de grupo: cents null = parte igual. */
+export interface ShareWrite {
+  memberId: number
+  cents: number | null
 }
 
 const SELECT = `
-  SELECT e.*, s.category_id, p.installments_count
+  SELECT e.*, s.category_id, p.installments_count,
+    (SELECT group_concat(x, ',') FROM (
+      SELECT es.member_id || ':' || COALESCE(es.share_cents, '') AS x FROM expense_shares es
+      WHERE es.expense_id = e.id ORDER BY es.member_id)) AS shares
   FROM expenses e
   JOIN subcategories s ON s.id = e.subcategory_id
   LEFT JOIN installment_plans p ON p.id = e.installment_plan_id`
@@ -74,7 +86,29 @@ export function toExpense(r: Row): Expense {
         : null,
     recurringTemplateId: r.recurring_template_id,
     notes: r.notes,
-    group: toExpenseGroup(r),
+    group: toGroupWithSplit(r),
+  }
+}
+
+function toGroupWithSplit(r: Row): (ExpenseGroup & { split: ExpenseSplit }) | null {
+  const group = toExpenseGroup(r)
+  if (!group) return null
+  const parts = (r.shares ?? '')
+    .split(',')
+    .filter(Boolean)
+    .map((p) => {
+      const [member, cents] = p.split(':')
+      return { memberId: Number(member), cents: cents ? Number(cents) : null }
+    })
+  const custom = parts.length > 0 && parts.every((p) => p.cents !== null)
+  return {
+    ...group,
+    split: custom
+      ? {
+          kind: 'custom',
+          shares: parts.map((p) => ({ memberId: p.memberId, cents: p.cents ?? 0 })),
+        }
+      : { kind: 'equal', memberIds: parts.map((p) => p.memberId) },
   }
 }
 
@@ -117,6 +151,14 @@ export function createExpensesRepo(db: Db) {
       'UPDATE expenses SET amount_cents = ?, updated_at = ? WHERE id = ? AND deleted_at IS NULL',
     ),
     purge: db.prepare('DELETE FROM expenses WHERE deleted_at IS NOT NULL AND deleted_at < ?'),
+    byGroup: db.prepare<[number], Row>(
+      `${SELECT} WHERE e.deleted_at IS NULL AND e.group_id = ? ${ORDER}`,
+    ),
+    deleteShares: db.prepare('DELETE FROM expense_shares WHERE expense_id = ?'),
+    insertShare: db.prepare(
+      'INSERT INTO expense_shares (expense_id, member_id, share_cents) VALUES (?, ?, ?)',
+    ),
+    sharesToEqual: db.prepare('UPDATE expense_shares SET share_cents = NULL WHERE expense_id = ?'),
     pendingCount: db.prepare<[string], { n: number }>(
       'SELECT COUNT(*) AS n FROM expenses WHERE deleted_at IS NULL AND charge_month = ? AND amount_cents IS NULL',
     ),
@@ -133,6 +175,18 @@ export function createExpensesRepo(db: Db) {
     listByMonth: (month: Month): Expense[] => stmts.byMonth.all(month).map(toExpense),
     listByRange: (from: Month, to: Month): Expense[] => stmts.byRange.all(from, to).map(toExpense),
     listByPlan: (planId: number): Expense[] => stmts.byPlan.all(planId).map(toExpense),
+    listByGroup: (groupId: number): Expense[] => stmts.byGroup.all(groupId).map(toExpense),
+
+    /** Reemplaza quiénes participan de un gasto (vacío = gasto personal). */
+    setShares(expenseId: number, shares: ShareWrite[]): void {
+      stmts.deleteShares.run(expenseId)
+      for (const s of shares) stmts.insertShare.run(expenseId, s.memberId, s.cents)
+    },
+
+    /** Pasa un reparto a mano a partes iguales entre las mismas personas (cuando cambia el monto). */
+    sharesToEqual(expenseId: number): void {
+      stmts.sharesToEqual.run(expenseId)
+    },
 
     search(filter: ExpenseFilter): Expense[] {
       const where = ['e.deleted_at IS NULL', 'e.charge_month BETWEEN @fromMonth AND @toMonth']
@@ -143,6 +197,10 @@ export function createExpensesRepo(db: Db) {
       if (filter.categoryId) {
         where.push('s.category_id = @categoryId')
         params['categoryId'] = filter.categoryId
+      }
+      if (filter.groupId) {
+        where.push('e.group_id = @groupId')
+        params['groupId'] = filter.groupId
       }
       if (filter.paymentMethodId) {
         where.push('e.payment_method_id = @paymentMethodId')

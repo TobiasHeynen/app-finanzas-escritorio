@@ -13,18 +13,20 @@ import { router } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CalendarClock, CreditCard, RotateCcw, Trash2, X } from 'lucide-react-native'
 import { computeChargeMonth } from '@shared/domain/charge-month'
-import { formatMoney, splitInstallments } from '@shared/money'
+import { formatMoney, splitInstallments, sumCents } from '@shared/money'
 import { formatMonthLong, isIsoDate, monthOf, todayIso, type Month } from '@shared/months'
-import type { Expense, ExpenseGroup } from '@shared/types'
+import type { Expense, ExpenseGroup, ExpenseSplit } from '@shared/types'
 import { DateField } from '@/components/date-field'
 import { GroupChips } from '@/components/group-chips'
 import { PaymentMethodIcon } from '@/components/icons'
 import { MoneyField } from '@/components/money-field'
 import { MonthStepper } from '@/components/month-stepper'
+import { SplitEditor } from '@/components/split-editor'
 import { SubcategoryPicker } from '@/components/subcategory-picker'
 import { Button, Chip, FieldError, Label, TextField } from '@/components/ui'
 import type { ApiError } from '@/lib/api'
 import { useCatalog } from '@/lib/catalog'
+import { defaultSplit, useGroupsIndex } from '@/lib/groups'
 import { movementKeys, useApiMutation } from '@/lib/hooks'
 import { useDeleteExpense } from '@/lib/movements'
 import { readLastMethod, rememberMethod, rememberPayer } from '@/lib/prefs'
@@ -65,8 +67,17 @@ export function ExpenseForm({
     expense?.description ?? defaults?.description ?? '',
   )
   const [notes, setNotes] = useState(expense?.notes ?? '')
-  const [group, setGroup] = useState<ExpenseGroup | null>(expense?.group ?? null)
+  const [group, setGroup] = useState<ExpenseGroup | null>(
+    expense?.group
+      ? { groupId: expense.group.groupId, paidByMemberId: expense.group.paidByMemberId }
+      : null,
+  )
+  /** null = partes iguales entre todos (lo que propone core si no viene reparto). */
+  const [split, setSplit] = useState<ExpenseSplit | null>(expense?.group?.split ?? null)
+  const groupsIndex = useGroupsIndex()
+  const groupEntity = group ? groupsIndex.groupById.get(group.groupId) : undefined
   const [inInstallments, setInInstallments] = useState(false)
+  const showSplit = Boolean(groupEntity) && !inInstallments
   const [count, setCount] = useState('3')
   const [startAt, setStartAt] = useState('1')
   const [override, setOverride] = useState<Month | null>(
@@ -114,6 +125,7 @@ export function ExpenseForm({
     setAmountValid(true)
     setDescription('')
     setNotes('')
+    setSplit(null)
     setErrors({})
     amountRef.current?.focus()
   }
@@ -155,6 +167,14 @@ export function ExpenseForm({
       else if (!(startNum >= 1 && startNum <= countNum))
         next['startAtInstallment'] = `Entre 1 y ${String(countNum)}`
     }
+    if (showSplit && split?.kind === 'equal' && split.memberIds.length === 0)
+      next['split'] = 'Elegí al menos una persona'
+    if (
+      showSplit &&
+      split?.kind === 'custom' &&
+      sumCents(split.shares.map((x) => x.cents)) !== amount
+    )
+      next['split'] = 'Las partes tienen que sumar el monto'
     setErrors(next)
     if (Object.keys(next).length > 0 || subcategoryId === null || paymentMethodId === null) return
 
@@ -166,6 +186,7 @@ export function ExpenseForm({
       notes: notes.trim() || null,
       group,
     }
+    const withSplit = { ...common, group: group && split ? { ...group, split } : group }
     const options = { onSuccess: () => onDone(another), onError: fieldErrors }
     if (inInstallments && amount !== null) {
       createPlan.mutate(
@@ -180,11 +201,14 @@ export function ExpenseForm({
       )
     } else if (expense) {
       update.mutate(
-        { id: expense.id, data: { ...common, amountCents: amount, chargeMonthOverride: override } },
+        {
+          id: expense.id,
+          data: { ...withSplit, amountCents: amount, chargeMonthOverride: override },
+        },
         options,
       )
     } else {
-      create.mutate({ ...common, amountCents: amount, chargeMonthOverride: override }, options)
+      create.mutate({ ...withSplit, amountCents: amount, chargeMonthOverride: override }, options)
     }
   }
 
@@ -290,7 +314,23 @@ export function ExpenseForm({
             />
           </View>
 
-          <GroupChips value={group} onChange={setGroup} error={errors['group']} />
+          <GroupChips
+            value={group}
+            onChange={(g) => {
+              if (g?.groupId !== group?.groupId) setSplit(null)
+              setGroup(g)
+            }}
+            error={errors['group']}
+          />
+          {showSplit && groupEntity ? (
+            <SplitEditor
+              group={groupEntity}
+              amount={amount}
+              value={split ?? defaultSplit(groupEntity)}
+              onChange={setSplit}
+              error={errors['split']}
+            />
+          ) : null}
 
           {!expense ? (
             <View style={[styles.box, { borderColor: c.border, backgroundColor: c.muted }]}>

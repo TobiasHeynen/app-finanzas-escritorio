@@ -43,8 +43,8 @@ export default function MasScreen() {
         <ListItem
           icon={icon(Users)}
           title="Grupos"
-          subtitle="Gastos compartidos: quién pagó cada cosa"
-          onPress={() => router.push('/config/grupos')}
+          subtitle="Gastos compartidos: quién le debe a quién"
+          onPress={() => router.push('/grupos')}
         />
       </View>
       <View style={{ gap: space(2) }}>

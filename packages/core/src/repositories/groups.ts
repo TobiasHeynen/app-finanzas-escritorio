@@ -1,5 +1,5 @@
 import type { SqlDb as Db } from '../db/sql'
-import type { Group, GroupMember } from '@shared/types'
+import type { Group, GroupMember, Settlement, SettlementInput } from '@shared/types'
 import { nowIso, notFound, translateSqliteError } from './util'
 
 interface GroupRow {
@@ -20,6 +20,26 @@ const toMember = (r: MemberRow): GroupMember => ({
   groupId: r.group_id,
   name: r.name,
   archived: r.archived_at !== null,
+})
+
+interface SettlementRow {
+  id: number
+  group_id: number
+  from_member_id: number
+  to_member_id: number
+  amount_cents: number
+  date: string
+  note: string
+}
+
+const toSettlement = (r: SettlementRow): Settlement => ({
+  id: r.id,
+  groupId: r.group_id,
+  fromMemberId: r.from_member_id,
+  toMemberId: r.to_member_id,
+  amountCents: r.amount_cents,
+  date: r.date,
+  note: r.note,
 })
 
 const DUP_GROUP = { unique: 'Ya existe un grupo con ese nombre' }
@@ -48,6 +68,22 @@ export function createGroupsRepo(db: Db) {
     ),
     updateMember: db.prepare(
       'UPDATE group_members SET name = ?, sort_order = ?, archived_at = NULL WHERE id = ?',
+    ),
+    settlements: db.prepare<[number], SettlementRow>(
+      'SELECT * FROM group_settlements WHERE group_id = ? AND deleted_at IS NULL ORDER BY date DESC, id DESC',
+    ),
+    settlement: db.prepare<[number], SettlementRow>(
+      'SELECT * FROM group_settlements WHERE id = ? AND deleted_at IS NULL',
+    ),
+    insertSettlement: db.prepare(
+      `INSERT INTO group_settlements (group_id, from_member_id, to_member_id, amount_cents, date, note)
+       VALUES (@groupId, @fromMemberId, @toMemberId, @amountCents, @date, @note)`,
+    ),
+    deleteSettlement: db.prepare(
+      'UPDATE group_settlements SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL',
+    ),
+    restoreSettlement: db.prepare(
+      'UPDATE group_settlements SET deleted_at = NULL WHERE id = ? AND deleted_at IS NOT NULL',
     ),
     archiveMember: db.prepare(
       'UPDATE group_members SET archived_at = ? WHERE id = ? AND archived_at IS NULL',
@@ -114,6 +150,22 @@ export function createGroupsRepo(db: Db) {
 
     archiveMember(id: number): void {
       stmts.archiveMember.run(nowIso(), id)
+    },
+
+    listSettlements: (groupId: number): Settlement[] =>
+      stmts.settlements.all(groupId).map(toSettlement),
+
+    insertSettlement(input: SettlementInput): Settlement {
+      const id = Number(stmts.insertSettlement.run(input).lastInsertRowid)
+      return toSettlement(stmts.settlement.get(id) ?? notFound('El pago'))
+    },
+
+    removeSettlement(id: number): void {
+      if (stmts.deleteSettlement.run(nowIso(), id).changes === 0) notFound('El pago')
+    },
+
+    restoreSettlement(id: number): void {
+      stmts.restoreSettlement.run(id)
     },
   }
 }

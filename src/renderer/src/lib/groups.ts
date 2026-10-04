@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { ExpenseGroup, Group, GroupMember } from '@shared/types'
+import type { ExpenseGroup, ExpenseSplit, Group, GroupMember } from '@shared/types'
 import { keys, useApiQuery } from './hooks'
 
 export function useGroups() {
@@ -55,4 +55,9 @@ export function rememberPayer(group: ExpenseGroup | null): void {
   } catch {
     // opcional
   }
+}
+
+/** Reparto por defecto: partes iguales entre las personas activas. */
+export function defaultSplit(group: Group): ExpenseSplit {
+  return { kind: 'equal', memberIds: group.members.filter((m) => !m.archived).map((m) => m.id) }
 }

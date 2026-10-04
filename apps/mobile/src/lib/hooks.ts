@@ -9,6 +9,8 @@ export const keys = {
   categories: ['categories'] as const,
   paymentMethods: ['paymentMethods'] as const,
   groups: ['groups'] as const,
+  groupBalance: (groupId: number) => ['groupBalance', groupId] as const,
+  groupBalanceAll: ['groupBalance'] as const,
   month: (month: string) => ['month', month] as const,
   monthAll: ['month'] as const,
   expenses: ['expenses'] as const,
@@ -31,6 +33,7 @@ export const movementKeys: QueryKey[] = [
   keys.report,
   keys.incomes,
   keys.savings,
+  keys.groupBalanceAll,
 ]
 
 export function useApiQuery<C extends IpcChannel>(

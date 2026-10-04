@@ -119,8 +119,84 @@ export const groupInputSchema = z
 /** Gasto de un grupo: a qué grupo pertenece y quién lo pagó. */
 export const expenseGroupSchema = z.object({ groupId: idSchema, paidByMemberId: idSchema }).strict()
 
-/** En los inputs: ausente o null = gasto personal, sin grupo. */
+/**
+ * Cómo se reparte un gasto de grupo. 'equal': partes iguales entre esas personas (el resto de centavos va
+ * a la primera, como en las cuotas). 'custom': cuánto le toca a cada una; tiene que sumar el monto.
+ */
+export const expenseSplitSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('equal'),
+      memberIds: z.array(idSchema).min(1, 'Elegí al menos una persona').max(20),
+    })
+    .strict(),
+  z
+    .object({
+      kind: z.literal('custom'),
+      shares: z
+        .array(z.object({ memberId: idSchema, cents: centsSchema }).strict())
+        .min(1)
+        .max(20),
+    })
+    .strict(),
+])
+
+/** En los inputs: ausente o null = personal, sin grupo. Cuotas y recurrentes: partes iguales. */
 const groupField = expenseGroupSchema.nullable().optional()
+
+/** Gasto de grupo con su reparto. Sin `split` = partes iguales entre las personas activas. */
+const expenseGroupField = expenseGroupSchema
+  .extend({ split: expenseSplitSchema.optional() })
+  .strict()
+  .nullable()
+  .optional()
+
+export const settlementSchema = z.object({
+  id: idSchema,
+  groupId: idSchema,
+  fromMemberId: idSchema,
+  toMemberId: idSchema,
+  amountCents: centsSchema,
+  date: isoDateSchema,
+  note: z.string(),
+})
+
+export const settlementInputSchema = z
+  .object({
+    groupId: idSchema,
+    fromMemberId: idSchema,
+    toMemberId: idSchema,
+    amountCents: centsSchema.refine((v) => v > 0, 'El monto tiene que ser mayor a 0'),
+    date: isoDateSchema,
+    note: z.string().trim().max(200),
+  })
+  .strict()
+  .refine((v) => v.fromMemberId !== v.toMemberId, {
+    path: ['toMemberId'],
+    message: 'Tienen que ser dos personas distintas',
+  })
+
+export const groupBalanceSchema = z.object({
+  groupId: idSchema,
+  /** Suma de los gastos del grupo con monto (los pendientes no cuentan). */
+  totalCents: centsSchema,
+  expenseCount: z.number().int(),
+  pendingCount: z.number().int(),
+  members: z.array(
+    z.object({
+      memberId: idSchema,
+      paidCents: centsSchema,
+      shareCents: centsSchema,
+      /** Positivo: le deben. Negativo: debe. Incluye los pagos para saldar. */
+      balanceCents: signedCentsSchema,
+    }),
+  ),
+  /** La menor cantidad de pagos para quedar a mano. */
+  transfers: z.array(
+    z.object({ fromMemberId: idSchema, toMemberId: idSchema, amountCents: centsSchema }),
+  ),
+  settlements: z.array(settlementSchema),
+})
 
 // ---------- Gastos ----------
 
@@ -139,7 +215,7 @@ export const expenseSchema = z.object({
     .nullable(),
   recurringTemplateId: idSchema.nullable(),
   notes: z.string().nullable(),
-  group: expenseGroupSchema.nullable(),
+  group: expenseGroupSchema.extend({ split: expenseSplitSchema }).nullable(),
 })
 
 /** Gasto recurrente proyectado en un mes futuro: no está guardado, se muestra en gris. */
@@ -165,7 +241,7 @@ export const expenseInputSchema = z
     /** Si viene, el mes de imputación queda fijado a mano. */
     chargeMonthOverride: monthSchema.nullable(),
     notes: z.string().trim().max(1000).nullable(),
-    group: groupField,
+    group: expenseGroupField,
   })
   .strict()
 

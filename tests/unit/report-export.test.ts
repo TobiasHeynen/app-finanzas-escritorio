@@ -5,6 +5,7 @@ import { createExportService } from '@main/services/export'
 import { createExportDataService } from '@core/services/export-data'
 import { buildExportFile, XLSX_MIME } from '@core/services/export-file'
 import { crc32 } from '@core/xlsx/zip'
+import { createGroupsService } from '@core/services/groups'
 import { createRecurringService } from '@core/services/recurring'
 import { createReportService } from '@core/services/report'
 import { createSavingsService } from '@core/services/savings'
@@ -136,9 +137,47 @@ describe('exportación', () => {
     expect(csv.startsWith('﻿Fecha;Mes;Categoría')).toBe(true)
     const lines = csv.trim().split('\r\n')
     expect(lines).toHaveLength(4)
-    expect(lines).toContain('10/03/2026;2026-03;Supermercado;Chino;Súper;Débito;;500,50;')
+    expect(lines).toContain('10/03/2026;2026-03;Supermercado;Chino;Súper;Débito;;500,50;;;')
     expect(csv).toContain('"Viaje; ""nocturno"""')
     expect(csv).toContain(';;Pendiente')
+  })
+
+  it('los gastos de grupo llevan el grupo y quién pagó (CSV, xlsx de la PC y del celu)', async () => {
+    const { ctx, exporter } = setup()
+    const ids = idsByName(ctx)
+    const casa = createGroupsService(ctx).create({
+      name: 'Casa',
+      members: ['Tobi', 'Ana'].map((name) => ({ id: null, name })),
+    })
+    createExpensesService(ctx).create({
+      subcategoryId: ids.sub('Chino'),
+      paymentMethodId: ids.method('Efectivo'),
+      description: 'Cena',
+      purchaseDate: '2026-03-20',
+      amountCents: 4_000_000,
+      chargeMonthOverride: null,
+      notes: null,
+      group: { groupId: casa.id, paidByMemberId: casa.members[1]?.id ?? 0 },
+    })
+    const req = { scope: 'month', period: '2026-03', format: 'csv' } as const
+    const csv = exporter.buildCsv(exporter.load(req))
+    expect(csv.split('\r\n')[0]).toMatch(/;Estado;Grupo;Pagó$/)
+    expect(csv).toContain(';Cena;Efectivo;;40000,00;;Casa;Ana')
+
+    const xlsxReq = { ...req, format: 'xlsx' } as const
+    const pc = await exporter.buildXlsx(exporter.load(xlsxReq))
+    const mobile = buildExportFile(createExportDataService(ctx), xlsxReq).content
+    for (const buffer of [pc, mobile]) {
+      const wb = new ExcelJS.Workbook()
+      await wb.xlsx.load(buffer as unknown as ArrayBuffer)
+      const detail = wb.getWorksheet('Gastos')!
+      expect(detail.getRow(1).getCell(10).value).toBe('Grupo')
+      expect(detail.getRow(1).getCell(11).value).toBe('Pagó')
+      const row = detail
+        .getSheetValues()
+        .find((r) => Array.isArray(r) && r[5] === 'Cena') as unknown[]
+      expect([row[10], row[11]]).toEqual(['Casa', 'Ana'])
+    }
   })
 })
 
