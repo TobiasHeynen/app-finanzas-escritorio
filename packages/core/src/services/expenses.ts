@@ -13,7 +13,7 @@ import { computeChargeMonth } from '@shared/domain/charge-month'
 import { currentMonthOf, type ServiceContext } from './context'
 import { buildInstallmentSchedule, firstChargeMonthFrom } from '@shared/domain/installments'
 import { toExpenseGroup } from '../repositories/util'
-import { checkExpenseGroup } from './groups'
+import { checkExpenseGroup, equalShares, resolveExpenseGroup } from './groups'
 
 export type ExpensesService = ReturnType<typeof createExpensesService>
 
@@ -79,20 +79,25 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
       const method = checkRefs(input.subcategoryId, input.paymentMethodId)
       const chargeMonth =
         input.chargeMonthOverride ?? computeChargeMonth(input.purchaseDate, method)
-      const id = expenses.insert({
-        subcategoryId: input.subcategoryId,
-        paymentMethodId: input.paymentMethodId,
-        description: input.description,
-        purchaseDate: input.purchaseDate,
-        chargeMonth,
-        chargeMonthLocked: input.chargeMonthOverride !== null,
-        amountCents: input.amountCents,
-        installmentPlanId: null,
-        installmentNumber: null,
-        recurringTemplateId: null,
-        notes: input.notes || null,
-        group: checkExpenseGroup(repos, input.group),
-      })
+      const { group, shares } = resolveExpenseGroup(repos, input.group, input.amountCents)
+      const id = db.transaction(() => {
+        const newId = expenses.insert({
+          subcategoryId: input.subcategoryId,
+          paymentMethodId: input.paymentMethodId,
+          description: input.description,
+          purchaseDate: input.purchaseDate,
+          chargeMonth,
+          chargeMonthLocked: input.chargeMonthOverride !== null,
+          amountCents: input.amountCents,
+          installmentPlanId: null,
+          installmentNumber: null,
+          recurringTemplateId: null,
+          notes: input.notes || null,
+          group,
+        })
+        expenses.setShares(newId, shares)
+        return newId
+      })()
       return expenses.get(id)
     },
 
@@ -112,17 +117,26 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
         chargeMonth = computeChargeMonth(input.purchaseDate, method)
         locked = false
       }
-      expenses.update(id, {
-        subcategoryId: input.subcategoryId,
-        paymentMethodId: input.paymentMethodId,
-        description: input.description,
-        purchaseDate: input.purchaseDate,
-        chargeMonth,
-        chargeMonthLocked: locked,
-        amountCents: input.amountCents,
-        notes: input.notes || null,
-        group: checkExpenseGroup(repos, input.group, current.group),
-      })
+      const { group, shares } = resolveExpenseGroup(
+        repos,
+        input.group,
+        input.amountCents,
+        current.group,
+      )
+      db.transaction(() => {
+        expenses.update(id, {
+          subcategoryId: input.subcategoryId,
+          paymentMethodId: input.paymentMethodId,
+          description: input.description,
+          purchaseDate: input.purchaseDate,
+          chargeMonth,
+          chargeMonthLocked: locked,
+          amountCents: input.amountCents,
+          notes: input.notes || null,
+          group,
+        })
+        expenses.setShares(id, shares)
+      })()
       return expenses.get(id)
     },
 
@@ -132,7 +146,13 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
       if (current.installment && amountCents === null) {
         throw new AppError('VALIDATION', 'Una cuota no puede quedar pendiente')
       }
-      expenses.setAmount(id, amountCents)
+      db.transaction(() => {
+        expenses.setAmount(id, amountCents)
+        // Un reparto a mano deja de sumar el monto nuevo: pasa a partes iguales entre las mismas personas.
+        if (current.group?.split.kind === 'custom' && amountCents !== current.amountCents) {
+          expenses.sharesToEqual(id)
+        }
+      })()
       return expenses.get(id)
     },
 
@@ -188,6 +208,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
     createPlan(input: InstallmentPlanInput): InstallmentPlan {
       const method = checkRefs(input.subcategoryId, input.paymentMethodId)
       const group = checkExpenseGroup(repos, input.group)
+      const shares = group ? equalShares(repos, group.groupId) : []
       const startAt = input.startAtInstallment
       const monthOfStart =
         input.firstChargeMonthOverride ??
@@ -215,7 +236,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
           group,
         })
         for (const row of schedule) {
-          expenses.insert({
+          const cuotaId = expenses.insert({
             subcategoryId: input.subcategoryId,
             paymentMethodId: input.paymentMethodId,
             description: input.description,
@@ -229,6 +250,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
             notes: input.notes || null,
             group,
           })
+          expenses.setShares(cuotaId, shares)
         }
         return id
       })()
@@ -248,6 +270,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
         paymentMethodId: plan.payment_method_id,
       })
       const group = checkExpenseGroup(repos, input.group, toExpenseGroup(plan))
+      const shares = group ? equalShares(repos, group.groupId) : []
       const existing = expenses.listByPlan(planId)
       if (existing.length === 0) throw new AppError('NOT_FOUND', 'El plan no tiene cuotas')
       const current = currentMonthOf(clock)
@@ -324,7 +347,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
         expenses.deleteHard(replace.map((e) => e.id))
         const startNumber = scope === 'all' ? fromNumber : lastKept + 1
         for (let n = startNumber; n <= input.installmentsCount; n++) {
-          expenses.insert({
+          const cuotaId = expenses.insert({
             subcategoryId: input.subcategoryId,
             paymentMethodId: input.paymentMethodId,
             description: input.description,
@@ -338,6 +361,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
             notes: input.notes || null,
             group,
           })
+          expenses.setShares(cuotaId, shares)
         }
       })()
       return getPlan(planId)

@@ -105,7 +105,7 @@ describe('gastos de un grupo', () => {
 
   it('guarda el grupo y quién pagó; sin grupo queda personal', () => {
     const group = { groupId: casa.id, paidByMemberId: memberId(casa, 'Ana') }
-    expect(svc.expenses.create({ ...expense(), group }).group).toEqual(group)
+    expect(svc.expenses.create({ ...expense(), group }).group).toMatchObject(group)
     expect(svc.expenses.create(expense()).group).toBeNull()
   })
 
@@ -115,7 +115,7 @@ describe('gastos de un grupo', () => {
       group: { groupId: casa.id, paidByMemberId: memberId(casa, 'Ana') },
     })
     const tobi = { groupId: casa.id, paidByMemberId: memberId(casa, 'Tobi') }
-    expect(svc.expenses.update(e.id, { ...expense(), group: tobi }).group).toEqual(tobi)
+    expect(svc.expenses.update(e.id, { ...expense(), group: tobi }).group).toMatchObject(tobi)
     expect(svc.expenses.update(e.id, { ...expense(), group: null }).group).toBeNull()
   })
 
@@ -134,7 +134,7 @@ describe('gastos de un grupo', () => {
     const e = svc.expenses.create({ ...expense(), group })
     svc.groups.setArchived(casa.id, true)
     expect(() => svc.expenses.create({ ...expense(), group })).toThrow('archivado')
-    expect(svc.expenses.update(e.id, { ...expense(), description: 'Otra', group }).group).toEqual(
+    expect(svc.expenses.update(e.id, { ...expense(), description: 'Otra', group }).group).toMatchObject(
       group,
     )
   })
@@ -156,7 +156,7 @@ describe('gastos de un grupo', () => {
   it('duplicar copia el grupo', () => {
     const group = { groupId: casa.id, paidByMemberId: memberId(casa, 'Tobi') }
     const e = svc.expenses.create({ ...expense(), group })
-    expect(svc.expenses.duplicate(e.id).group).toEqual(group)
+    expect(svc.expenses.duplicate(e.id).group).toMatchObject(group)
   })
 
   it('las cuotas llevan el grupo del plan, también al editarlo', () => {
@@ -173,8 +173,8 @@ describe('gastos de un grupo', () => {
       notes: null,
       group: ana,
     })
-    expect(plan.group).toEqual(ana)
-    expect(ctx.repos.expenses.listByPlan(plan.id).map((e) => e.group)).toEqual([ana, ana, ana])
+    expect(plan.group).toMatchObject(ana)
+    expect(ctx.repos.expenses.listByPlan(plan.id).map((e) => e.group)).toMatchObject([ana, ana, ana])
 
     const tobi = { groupId: casa.id, paidByMemberId: memberId(casa, 'Tobi') }
     const edited = svc.expenses.updatePlan(
@@ -190,7 +190,7 @@ describe('gastos de un grupo', () => {
       },
       'all',
     )
-    expect(edited.group).toEqual(tobi)
+    expect(edited.group).toMatchObject(tobi)
     expect(
       ctx.repos.expenses
         .listByPlan(plan.id)
@@ -211,12 +211,12 @@ describe('gastos de un grupo', () => {
       active: true,
       group,
     })
-    expect(t.group).toEqual(group)
+    expect(t.group).toMatchObject(group)
     const generated = ctx.repos.expenses
       .listByRange('2026-09', '2026-10')
       .filter((e) => e.recurringTemplateId === t.id)
     expect(generated).toHaveLength(2)
     expect(generated.every((e) => e.group?.groupId === casa.id)).toBe(true)
-    expect(svc.recurring.projectionsFor('2026-11')[0]?.group).toEqual(group)
+    expect(svc.recurring.projectionsFor('2026-11')[0]?.group).toMatchObject(group)
   })
 })

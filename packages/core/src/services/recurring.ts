@@ -3,7 +3,7 @@ import { compareMonths, dateInMonth, type Month } from '@shared/months'
 import type { ProjectedExpense, RecurringTemplate, RecurringTemplateInput } from '@shared/types'
 import { currentMonthOf, type ServiceContext } from './context'
 import { monthsToGenerate, templateAppliesTo } from './recurring-schedule'
-import { checkExpenseGroup } from './groups'
+import { checkExpenseGroup, equalShares } from './groups'
 
 export type RecurringService = ReturnType<typeof createRecurringService>
 
@@ -49,6 +49,7 @@ export function createRecurringService({ db, repos, clock }: ServiceContext) {
             notes: null,
             group: t.group,
           })
+          if (t.group) expenses.setShares(expenseId, equalShares(repos, t.group.groupId))
           recurring.markGenerated(t.id, month, expenseId)
           created++
         }
