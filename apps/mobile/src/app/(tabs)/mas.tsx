@@ -8,6 +8,7 @@ import {
   FileSpreadsheet,
   Repeat,
   Shapes,
+  Users,
 } from 'lucide-react-native'
 import { ListItem } from '@/components/list-item'
 import { Screen } from '@/components/screen'
@@ -38,6 +39,12 @@ export default function MasScreen() {
           title="Medios de pago y tarjetas"
           subtitle="Cómo pagaste; día de cierre de cada tarjeta"
           onPress={() => router.push('/config/medios')}
+        />
+        <ListItem
+          icon={icon(Users)}
+          title="Grupos"
+          subtitle="Gastos compartidos: quién pagó cada cosa"
+          onPress={() => router.push('/config/grupos')}
         />
       </View>
       <View style={{ gap: space(2) }}>

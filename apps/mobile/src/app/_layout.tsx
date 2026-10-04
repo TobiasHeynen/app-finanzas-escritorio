@@ -17,6 +17,7 @@ const MODALS = [
   'config/recurrente',
   'config/categoria',
   'config/medio',
+  'config/grupo',
 ]
 
 type Boot = { ok: true; app: AppServices } | { ok: false; message: string } | null
