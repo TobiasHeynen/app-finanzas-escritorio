@@ -146,6 +146,7 @@ function ExpenseForm({
     setDescription('')
     setNotes('')
     setShowNotes(false)
+    setSplit(null)
     setErrors({})
   }
 

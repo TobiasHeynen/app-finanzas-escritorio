@@ -16,6 +16,7 @@ export function MoneyField({
   large,
   autoFocus,
   inputRef,
+  accessibilityLabel,
 }: {
   value: number | null
   onValueChange: (cents: number | null, valid: boolean) => void
@@ -25,6 +26,7 @@ export function MoneyField({
   large?: boolean
   autoFocus?: boolean
   inputRef?: Ref<TextInput>
+  accessibilityLabel?: string
 }) {
   const c = useColors()
   const [text, setText] = useState(() => formatMoneyInput(value))
@@ -50,6 +52,7 @@ export function MoneyField({
       </Text>
       <TextInput
         ref={inputRef}
+        accessibilityLabel={accessibilityLabel}
         autoFocus={autoFocus}
         keyboardType="decimal-pad"
         inputMode="decimal"
