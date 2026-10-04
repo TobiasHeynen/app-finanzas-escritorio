@@ -4,10 +4,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@renderer/components/u
 import { AppearanceSection } from './appearance-section'
 import { BackupsSection } from './backups-section'
 import { CategoriesSection } from './categories-section'
+import { GroupsSection } from './groups-section'
 import { PaymentMethodsSection } from './payment-methods-section'
 import { RecurringSection } from './recurring-section'
 
-const TABS = ['categorias', 'medios', 'recurrentes', 'backups', 'apariencia'] as const
+const TABS = ['categorias', 'medios', 'recurrentes', 'grupos', 'backups', 'apariencia'] as const
 
 export function ConfiguracionPage() {
   const [params, setParams] = useSearchParams()
@@ -20,6 +21,7 @@ export function ConfiguracionPage() {
           <TabsTrigger value="categorias">Categorías</TabsTrigger>
           <TabsTrigger value="medios">Medios de pago</TabsTrigger>
           <TabsTrigger value="recurrentes">Recurrentes</TabsTrigger>
+          <TabsTrigger value="grupos">Grupos</TabsTrigger>
           <TabsTrigger value="backups">Backups</TabsTrigger>
           <TabsTrigger value="apariencia">Apariencia</TabsTrigger>
         </TabsList>
@@ -31,6 +33,9 @@ export function ConfiguracionPage() {
         </TabsContent>
         <TabsContent value="recurrentes">
           <RecurringSection />
+        </TabsContent>
+        <TabsContent value="grupos">
+          <GroupsSection />
         </TabsContent>
         <TabsContent value="backups">
           <BackupsSection />

@@ -3,7 +3,8 @@ import { CalendarClock, CreditCard, RotateCcw, StickyNote } from 'lucide-react'
 import { computeChargeMonth } from '@shared/domain/charge-month'
 import { formatMoney, splitInstallments } from '@shared/money'
 import { formatMonthLong, isIsoDate, monthOf, todayIso, type Month } from '@shared/months'
-import type { Expense } from '@shared/types'
+import type { Expense, ExpenseGroup } from '@shared/types'
+import { GroupFields } from '@renderer/components/group-fields'
 import { MoneyInput } from '@renderer/components/money-input'
 import { MonthStepper } from '@renderer/components/month-stepper'
 import { FieldError } from '@renderer/components/page'
@@ -23,6 +24,7 @@ import { Label } from '@renderer/components/ui/label'
 import { Switch } from '@renderer/components/ui/switch'
 import { Textarea } from '@renderer/components/ui/textarea'
 import { useCatalog } from '@renderer/lib/catalog'
+import { rememberPayer } from '@renderer/lib/groups'
 import { movementKeys, useApiMutation } from '@renderer/lib/hooks'
 import { cn } from '@renderer/lib/utils'
 
@@ -116,6 +118,7 @@ function ExpenseForm({
     expense?.description ?? defaults?.description ?? '',
   )
   const [notes, setNotes] = useState(expense?.notes ?? '')
+  const [group, setGroup] = useState<ExpenseGroup | null>(expense?.group ?? null)
   const [showNotes, setShowNotes] = useState(Boolean(expense?.notes))
   const [inInstallments, setInInstallments] = useState(false)
   const [count, setCount] = useState('3')
@@ -168,6 +171,7 @@ function ExpenseForm({
 
   const onDone = (another: boolean) => {
     if (paymentMethodId !== null) rememberMethod(paymentMethodId)
+    rememberPayer(group)
     if (another) {
       resetForNext()
       amountRef.current?.focus()
@@ -215,6 +219,7 @@ function ExpenseForm({
       description: description.trim(),
       purchaseDate,
       notes: notes.trim() || null,
+      group,
     }
     const options = { onSuccess: () => onDone(another), onError: fieldErrors }
     if (inInstallments && amount !== null) {
@@ -319,6 +324,7 @@ function ExpenseForm({
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
+        <GroupFields idPrefix="expense" value={group} onChange={setGroup} error={errors['group']} />
       </div>
 
       {!expense && (

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, MoreHorizontal, Pencil, Repeat, Trash2 } from 'lucide-react'
+import { Copy, MoreHorizontal, Pencil, Repeat, Trash2, Users } from 'lucide-react'
 import type { Expense, ProjectedExpense } from '@shared/types'
 import { CategoryIcon } from '@renderer/components/category-icon'
 import { Money } from '@renderer/components/money'
@@ -16,6 +16,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@renderer/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@renderer/components/ui/tooltip'
 import { useCatalog } from '@renderer/lib/catalog'
+import { groupLabel, useGroupsIndex } from '@renderer/lib/groups'
 import { useDeleteExpense, useDuplicateExpense, useSetExpenseAmount } from '@renderer/lib/movements'
 import { cn } from '@renderer/lib/utils'
 import { useExpenseDialog } from './expense-dialog-provider'
@@ -29,6 +30,8 @@ export function ExpenseRow({
 }) {
   const { subcategoryById, paymentMethodById } = useCatalog()
   const { openEdit } = useExpenseDialog()
+  const groups = useGroupsIndex()
+  const inGroup = groupLabel(groups, expense.group)
   const remove = useDeleteExpense()
   const duplicate = useDuplicateExpense()
   const sub = subcategoryById.get(expense.subcategoryId)
@@ -60,6 +63,11 @@ export function ExpenseRow({
               </TooltipTrigger>
               <TooltipContent>Gasto recurrente</TooltipContent>
             </Tooltip>
+          )}
+          {inGroup && (
+            <Badge variant="outline" className="max-w-56 truncate font-normal">
+              <Users /> {inGroup}
+            </Badge>
           )}
         </span>
         <span className="truncate text-xs text-muted-foreground">

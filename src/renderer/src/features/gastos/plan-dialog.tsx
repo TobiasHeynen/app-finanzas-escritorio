@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { CheckCircle2, Circle, Trash2 } from 'lucide-react'
 import { formatMoney } from '@shared/money'
 import { compareMonths, formatMonthShort, monthOf, todayIso } from '@shared/months'
-import type { InstallmentPlan, PlanScope } from '@shared/types'
+import type { ExpenseGroup, InstallmentPlan, PlanScope } from '@shared/types'
+import { GroupFields } from '@renderer/components/group-fields'
 import { Money } from '@renderer/components/money'
 import { MoneyInput } from '@renderer/components/money-input'
 import { FieldError } from '@renderer/components/page'
@@ -74,6 +75,7 @@ function PlanForm({ plan, onClose }: { plan: InstallmentPlan; onClose: () => voi
   const [total, setTotal] = useState<number | null>(plan.totalCents)
   const [totalValid, setTotalValid] = useState(true)
   const [count, setCount] = useState(String(plan.installmentsCount))
+  const [group, setGroup] = useState<ExpenseGroup | null>(plan.group)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [confirm, setConfirm] = useState<Confirm>(null)
 
@@ -113,6 +115,7 @@ function PlanForm({ plan, onClose }: { plan: InstallmentPlan; onClose: () => voi
           totalCents: total,
           installmentsCount: countNum,
           notes: null,
+          group,
         },
       },
       {
@@ -190,6 +193,12 @@ function PlanForm({ plan, onClose }: { plan: InstallmentPlan; onClose: () => voi
               />
               <FieldError message={errors['installmentsCount']} />
             </div>
+            <GroupFields
+              idPrefix="plan"
+              value={group}
+              onChange={setGroup}
+              error={errors['group']}
+            />
           </div>
           <FieldError message={errors['_']} />
         </div>
