@@ -134,9 +134,9 @@ describe('gastos de un grupo', () => {
     const e = svc.expenses.create({ ...expense(), group })
     svc.groups.setArchived(casa.id, true)
     expect(() => svc.expenses.create({ ...expense(), group })).toThrow('archivado')
-    expect(svc.expenses.update(e.id, { ...expense(), description: 'Otra', group }).group).toMatchObject(
-      group,
-    )
+    expect(
+      svc.expenses.update(e.id, { ...expense(), description: 'Otra', group }).group,
+    ).toMatchObject(group)
   })
 
   it('no deja elegir como pagador a alguien que se sacó del grupo', () => {
@@ -174,7 +174,11 @@ describe('gastos de un grupo', () => {
       group: ana,
     })
     expect(plan.group).toMatchObject(ana)
-    expect(ctx.repos.expenses.listByPlan(plan.id).map((e) => e.group)).toMatchObject([ana, ana, ana])
+    expect(ctx.repos.expenses.listByPlan(plan.id).map((e) => e.group)).toMatchObject([
+      ana,
+      ana,
+      ana,
+    ])
 
     const tobi = { groupId: casa.id, paidByMemberId: memberId(casa, 'Tobi') }
     const edited = svc.expenses.updatePlan(
