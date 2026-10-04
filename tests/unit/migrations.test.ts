@@ -30,9 +30,25 @@ describe('migraciones', () => {
       'savings_movements',
       'settings',
       'schema_migrations',
+      'shared_groups',
+      'group_members',
     ]) {
       expect(tables).toContain(t)
     }
+  })
+
+  it('la 002 (grupos) actualiza una base v1 con datos sin tocar los gastos existentes', () => {
+    const db = openDatabase(':memory:')
+    migrate(db, migrations.slice(0, 1))
+    seed(db)
+    db.prepare(
+      `INSERT INTO expenses (subcategory_id, payment_method_id, purchase_date, charge_month, amount_cents)
+       VALUES (1, 1, '2026-10-01', '2026-10', 1000)`,
+    ).run()
+    expect(migrate(db)).toEqual([2])
+    expect(
+      db.prepare('SELECT amount_cents, group_id, paid_by_member_id FROM expenses').get(),
+    ).toEqual({ amount_cents: 1000, group_id: null, paid_by_member_id: null })
   })
 
   it('es idempotente: correr dos veces no aplica nada nuevo', () => {

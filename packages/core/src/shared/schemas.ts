@@ -78,6 +78,50 @@ export const paymentMethodInputSchema = z
   })
   .transform((v) => (v.type === 'tarjeta_credito' ? v : { ...v, closingDay: null, dueDay: null }))
 
+// ---------- Grupos ----------
+
+export const groupMemberSchema = z.object({
+  id: idSchema,
+  groupId: idSchema,
+  name: z.string(),
+  archived: z.boolean(),
+})
+
+export const groupSchema = z.object({
+  id: idSchema,
+  name: z.string(),
+  archived: z.boolean(),
+  /** Incluye las personas archivadas (que se sacaron del grupo pero tienen gastos). */
+  members: z.array(groupMemberSchema),
+})
+
+export const groupInputSchema = z
+  .object({
+    name: nameSchema(60),
+    /** Personas activas del grupo. id null = nueva. Las que no vienen se archivan. */
+    members: z
+      .array(z.object({ id: idSchema.nullable(), name: nameSchema(40) }).strict())
+      .min(2, 'Agregá al menos 2 personas')
+      .max(20, 'Hasta 20 personas por grupo'),
+  })
+  .strict()
+  .superRefine((v, ctx) => {
+    const seen = new Set<string>()
+    v.members.forEach((m, i) => {
+      const key = m.name.toLocaleLowerCase('es-AR')
+      if (seen.has(key)) {
+        ctx.addIssue({ code: 'custom', path: ['members', i, 'name'], message: 'Nombre repetido' })
+      }
+      seen.add(key)
+    })
+  })
+
+/** Gasto de un grupo: a qué grupo pertenece y quién lo pagó. */
+export const expenseGroupSchema = z.object({ groupId: idSchema, paidByMemberId: idSchema }).strict()
+
+/** En los inputs: ausente o null = gasto personal, sin grupo. */
+const groupField = expenseGroupSchema.nullable().optional()
+
 // ---------- Gastos ----------
 
 export const expenseSchema = z.object({
@@ -95,6 +139,7 @@ export const expenseSchema = z.object({
     .nullable(),
   recurringTemplateId: idSchema.nullable(),
   notes: z.string().nullable(),
+  group: expenseGroupSchema.nullable(),
 })
 
 /** Gasto recurrente proyectado en un mes futuro: no está guardado, se muestra en gris. */
@@ -107,6 +152,7 @@ export const projectedExpenseSchema = z.object({
   amountCents: centsSchema.nullable(),
   date: isoDateSchema,
   month: monthSchema,
+  group: expenseGroupSchema.nullable(),
 })
 
 export const expenseInputSchema = z
@@ -119,6 +165,7 @@ export const expenseInputSchema = z
     /** Si viene, el mes de imputación queda fijado a mano. */
     chargeMonthOverride: monthSchema.nullable(),
     notes: z.string().trim().max(1000).nullable(),
+    group: groupField,
   })
   .strict()
 
@@ -135,6 +182,7 @@ export const installmentPlanInputSchema = z
     /** Mes de la cuota `startAtInstallment`. null = calculado (mes de imputación de la compra). */
     firstChargeMonthOverride: monthSchema.nullable(),
     notes: z.string().trim().max(1000).nullable(),
+    group: groupField,
   })
   .strict()
   .refine((v) => v.startAtInstallment <= v.installmentsCount, {
@@ -152,6 +200,7 @@ export const installmentPlanSchema = z.object({
   totalCents: centsSchema,
   installmentsCount: z.number().int(),
   firstChargeMonth: monthSchema,
+  group: expenseGroupSchema.nullable(),
   /** Cuotas existentes (no borradas). */
   installments: z.array(
     z.object({
@@ -174,6 +223,7 @@ export const installmentPlanUpdateSchema = z
     totalCents: centsSchema.refine((v) => v > 0, 'El total tiene que ser mayor a 0'),
     installmentsCount: z.number().int().min(2).max(120),
     notes: z.string().trim().max(1000).nullable(),
+    group: groupField,
   })
   .strict()
 
@@ -190,6 +240,7 @@ export const recurringTemplateSchema = z.object({
   startMonth: monthSchema,
   endMonth: monthSchema.nullable(),
   active: z.boolean(),
+  group: expenseGroupSchema.nullable(),
 })
 
 export const recurringTemplateInputSchema = z
@@ -202,6 +253,7 @@ export const recurringTemplateInputSchema = z
     startMonth: monthSchema,
     endMonth: monthSchema.nullable(),
     active: z.boolean(),
+    group: groupField,
   })
   .strict()
   .refine((v) => v.endMonth === null || v.endMonth >= v.startMonth, {

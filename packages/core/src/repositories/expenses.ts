@@ -1,7 +1,7 @@
 import type { SqlDb as Db } from '../db/sql'
-import type { Expense } from '@shared/types'
+import type { Expense, ExpenseGroup } from '@shared/types'
 import type { Month } from '@shared/months'
-import { nowIso, notFound, placeholders } from './util'
+import { groupParams, nowIso, notFound, placeholders, toExpenseGroup } from './util'
 
 interface Row {
   id: number
@@ -18,6 +18,8 @@ interface Row {
   installments_count: number | null
   recurring_template_id: number | null
   notes: string | null
+  group_id: number | null
+  paid_by_member_id: number | null
 }
 
 export interface ExpenseWrite {
@@ -32,6 +34,7 @@ export interface ExpenseWrite {
   installmentNumber: number | null
   recurringTemplateId: number | null
   notes: string | null
+  group: ExpenseGroup | null
 }
 
 export interface ExpenseFilter {
@@ -71,11 +74,13 @@ export function toExpense(r: Row): Expense {
         : null,
     recurringTemplateId: r.recurring_template_id,
     notes: r.notes,
+    group: toExpenseGroup(r),
   }
 }
 
-const toParams = (w: ExpenseWrite) => ({
+const toParams = ({ group, ...w }: ExpenseWrite) => ({
   ...w,
+  ...groupParams(group),
   chargeMonthLocked: w.chargeMonthLocked ? 1 : 0,
 })
 
@@ -95,15 +100,17 @@ export function createExpensesRepo(db: Db) {
     ),
     insert: db.prepare(
       `INSERT INTO expenses (subcategory_id, payment_method_id, description, purchase_date, charge_month,
-         charge_month_locked, amount_cents, installment_plan_id, installment_number, recurring_template_id, notes)
+         charge_month_locked, amount_cents, installment_plan_id, installment_number, recurring_template_id, notes,
+         group_id, paid_by_member_id)
        VALUES (@subcategoryId, @paymentMethodId, @description, @purchaseDate, @chargeMonth,
-         @chargeMonthLocked, @amountCents, @installmentPlanId, @installmentNumber, @recurringTemplateId, @notes)`,
+         @chargeMonthLocked, @amountCents, @installmentPlanId, @installmentNumber, @recurringTemplateId, @notes,
+         @groupId, @paidByMemberId)`,
     ),
     update: db.prepare(
       `UPDATE expenses SET subcategory_id = @subcategoryId, payment_method_id = @paymentMethodId,
          description = @description, purchase_date = @purchaseDate, charge_month = @chargeMonth,
          charge_month_locked = @chargeMonthLocked, amount_cents = @amountCents, notes = @notes,
-         updated_at = @updatedAt
+         group_id = @groupId, paid_by_member_id = @paidByMemberId, updated_at = @updatedAt
        WHERE id = @id AND deleted_at IS NULL`,
     ),
     setAmount: db.prepare(
@@ -163,8 +170,10 @@ export function createExpensesRepo(db: Db) {
       id: number,
       w: Omit<ExpenseWrite, 'installmentPlanId' | 'installmentNumber' | 'recurringTemplateId'>,
     ): void {
+      const { group, ...rest } = w
       const info = stmts.update.run({
-        ...w,
+        ...rest,
+        ...groupParams(group),
         chargeMonthLocked: w.chargeMonthLocked ? 1 : 0,
         id,
         updatedAt: nowIso(),
@@ -211,15 +220,18 @@ export function createExpensesRepo(db: Db) {
         description: string
         amountCents: number
         notes: string | null
+        group: ExpenseGroup | null
       },
     ): void {
+      const { group, ...rest } = w
       const info = db
         .prepare(
           `UPDATE expenses SET subcategory_id = @subcategoryId, payment_method_id = @paymentMethodId,
-             description = @description, amount_cents = @amountCents, notes = @notes, updated_at = @updatedAt
+             description = @description, amount_cents = @amountCents, notes = @notes,
+             group_id = @groupId, paid_by_member_id = @paidByMemberId, updated_at = @updatedAt
            WHERE id = @id AND deleted_at IS NULL`,
         )
-        .run({ ...w, id, updatedAt: nowIso() })
+        .run({ ...rest, ...groupParams(group), id, updatedAt: nowIso() })
       if (info.changes === 0) notFound('La cuota')
     },
 

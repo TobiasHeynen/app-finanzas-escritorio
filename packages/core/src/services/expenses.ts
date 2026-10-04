@@ -12,6 +12,8 @@ import type {
 import { computeChargeMonth } from '@shared/domain/charge-month'
 import { currentMonthOf, type ServiceContext } from './context'
 import { buildInstallmentSchedule, firstChargeMonthFrom } from '@shared/domain/installments'
+import { toExpenseGroup } from '../repositories/util'
+import { checkExpenseGroup } from './groups'
 
 export type ExpensesService = ReturnType<typeof createExpensesService>
 
@@ -57,6 +59,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
       totalCents: plan.total_cents,
       installmentsCount: plan.installments_count,
       firstChargeMonth: plan.first_charge_month,
+      group: toExpenseGroup(plan),
       installments: rows.map((e) => ({
         expenseId: e.id,
         number: e.installment?.number ?? 0,
@@ -88,6 +91,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
         installmentNumber: null,
         recurringTemplateId: null,
         notes: input.notes || null,
+        group: checkExpenseGroup(repos, input.group),
       })
       return expenses.get(id)
     },
@@ -117,6 +121,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
         chargeMonthLocked: locked,
         amountCents: input.amountCents,
         notes: input.notes || null,
+        group: checkExpenseGroup(repos, input.group, current.group),
       })
       return expenses.get(id)
     },
@@ -147,6 +152,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
           startAtInstallment: 1,
           firstChargeMonthOverride: null,
           notes: e.notes,
+          group: toExpenseGroup(plan),
         })
         const first = created.installments[0]
         if (!first) throw new Error('El plan duplicado no tiene cuotas')
@@ -160,6 +166,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
         amountCents: e.amountCents,
         chargeMonthOverride: null,
         notes: e.notes,
+        group: e.group,
       })
     },
 
@@ -180,6 +187,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
      */
     createPlan(input: InstallmentPlanInput): InstallmentPlan {
       const method = checkRefs(input.subcategoryId, input.paymentMethodId)
+      const group = checkExpenseGroup(repos, input.group)
       const startAt = input.startAtInstallment
       const monthOfStart =
         input.firstChargeMonthOverride ??
@@ -204,6 +212,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
           totalCents: input.totalCents,
           installmentsCount: input.installmentsCount,
           firstChargeMonth,
+          group,
         })
         for (const row of schedule) {
           expenses.insert({
@@ -218,6 +227,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
             installmentNumber: row.number,
             recurringTemplateId: null,
             notes: input.notes || null,
+            group,
           })
         }
         return id
@@ -237,6 +247,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
         subcategoryId: plan.subcategory_id,
         paymentMethodId: plan.payment_method_id,
       })
+      const group = checkExpenseGroup(repos, input.group, toExpenseGroup(plan))
       const existing = expenses.listByPlan(planId)
       if (existing.length === 0) throw new AppError('NOT_FOUND', 'El plan no tiene cuotas')
       const current = currentMonthOf(clock)
@@ -251,6 +262,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
           totalCents: input.totalCents,
           installmentsCount: input.installmentsCount,
           firstChargeMonth: plan.first_charge_month,
+          group,
         })
 
         const keep =
@@ -303,6 +315,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
               description: e.description,
               amountCents: e.amountCents ?? 0,
               notes: e.notes,
+              group: e.group,
             })
           }
         }
@@ -323,6 +336,7 @@ export function createExpensesService({ db, repos, clock }: ServiceContext) {
             installmentNumber: n,
             recurringTemplateId: null,
             notes: input.notes || null,
+            group,
           })
         }
       })()
