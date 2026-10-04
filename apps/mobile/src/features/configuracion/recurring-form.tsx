@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { Alert, StyleSheet, Switch, Text, View } from 'react-native'
 import { router } from 'expo-router'
 import { currentMonth, type Month } from '@shared/months'
-import type { RecurringTemplate } from '@shared/types'
+import type { ExpenseGroup, RecurringTemplate } from '@shared/types'
 import { Field, FormScreen } from '@/components/form-screen'
+import { GroupChips } from '@/components/group-chips'
 import { MoneyField } from '@/components/money-field'
 import { MonthStepper } from '@/components/month-stepper'
 import { PaymentMethodChips } from '@/components/pickers'
@@ -29,6 +30,7 @@ export function RecurringForm({ template }: { template: RecurringTemplate | null
   const [hasEnd, setHasEnd] = useState(template?.endMonth != null)
   const [endMonth, setEndMonth] = useState<Month>(template?.endMonth ?? currentMonth())
   const [active, setActive] = useState(template?.active ?? true)
+  const [group, setGroup] = useState<ExpenseGroup | null>(template?.group ?? null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const options = {
@@ -64,6 +66,7 @@ export function RecurringForm({ template }: { template: RecurringTemplate | null
       startMonth,
       endMonth: hasEnd ? endMonth : null,
       active,
+      group,
     }
     const onError = (err: ApiError) => {
       setErrors({ _: err.message, ...err.fields })
@@ -136,6 +139,7 @@ export function RecurringForm({ template }: { template: RecurringTemplate | null
       <Field label="Desde">
         <MonthStepper size="sm" value={startMonth} onChange={setStartMonth} />
       </Field>
+      <GroupChips value={group} onChange={setGroup} error={errors['group']} />
       <View style={[styles.box, { borderColor: c.border }]}>
         <View style={styles.switchRow}>
           <Text style={{ color: c.foreground, fontSize: 15 }}>Termina</Text>

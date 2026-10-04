@@ -57,6 +57,12 @@ export function createCoreHandlers<D extends SqlDb>(services: Services<D>): Core
       return ok
     },
 
+    // Grupos
+    'groups:list': () => services.groups.list(),
+    'groups:create': (input) => services.groups.create(input),
+    'groups:update': ({ id, data }) => services.groups.update(id, data),
+    'groups:archive': ({ id, archived }) => services.groups.setArchived(id, archived),
+
     // Mes
     'month:overview': ({ month }) => services.summary.overview(month),
 

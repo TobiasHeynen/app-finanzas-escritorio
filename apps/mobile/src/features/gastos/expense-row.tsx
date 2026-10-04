@@ -1,10 +1,11 @@
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native'
-import { Repeat } from 'lucide-react-native'
+import { Repeat, Users } from 'lucide-react-native'
 import { formatMonthLong } from '@shared/months'
 import type { Expense, ProjectedExpense } from '@shared/types'
 import { CategoryIcon } from '@/components/icons'
 import { Money } from '@/components/money'
 import { useCatalog } from '@/lib/catalog'
+import { groupLabel, useGroupsIndex } from '@/lib/groups'
 import { useDeleteExpense, useDeletePlan, useDuplicateExpense } from '@/lib/movements'
 import { radius, space, useColors } from '@/lib/theme'
 import { openPlan } from '@/features/tarjetas/open-plan'
@@ -16,6 +17,7 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
   const remove = useDeleteExpense()
   const removePlan = useDeletePlan()
   const duplicate = useDuplicateExpense()
+  const inGroup = groupLabel(useGroupsIndex(), expense.group)
   const sub = subcategoryById.get(expense.subcategoryId)
   const method = paymentMethodById.get(expense.paymentMethodId)
   const title = expense.description || sub?.name || 'Gasto'
@@ -91,6 +93,14 @@ export function ExpenseRow({ expense }: { expense: Expense }) {
           {sub ? `${sub.category.name} › ${sub.name}` : ''}
           {method ? ` · ${method.name}` : ''}
         </Text>
+        {inGroup ? (
+          <View style={styles.titleRow}>
+            <Users color={c.mutedForeground} size={12} />
+            <Text numberOfLines={1} style={[styles.subtitle, { color: c.mutedForeground }]}>
+              {inGroup}
+            </Text>
+          </View>
+        ) : null}
       </View>
       {expense.amountCents === null ? (
         <Text style={[styles.pending, { color: c.pending, borderColor: `${c.pending}66` }]}>

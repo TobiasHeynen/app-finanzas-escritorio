@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { currentMonth, type Month } from '@shared/months'
-import type { RecurringTemplate } from '@shared/types'
+import type { ExpenseGroup, RecurringTemplate } from '@shared/types'
+import { GroupFields } from '@renderer/components/group-fields'
 import { MoneyInput } from '@renderer/components/money-input'
 import { MonthStepper } from '@renderer/components/month-stepper'
 import { FieldError } from '@renderer/components/page'
@@ -57,6 +58,7 @@ function RecurringForm({
   const [hasEnd, setHasEnd] = useState(template?.endMonth != null)
   const [endMonth, setEndMonth] = useState<Month>(template?.endMonth ?? currentMonth())
   const [active, setActive] = useState(template?.active ?? true)
+  const [group, setGroup] = useState<ExpenseGroup | null>(template?.group ?? null)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   const options = {
@@ -88,6 +90,7 @@ function RecurringForm({
       startMonth,
       endMonth: hasEnd ? endMonth : null,
       active,
+      group,
     }
     const onError = (err: Error & { fields?: Record<string, string> }) =>
       setErrors({ _: err.message, ...err.fields })
@@ -160,6 +163,7 @@ function RecurringForm({
           <Label>Desde</Label>
           <MonthStepper size="sm" value={startMonth} onChange={setStartMonth} className="h-9" />
         </div>
+        <GroupFields idPrefix="rec" value={group} onChange={setGroup} error={errors['group']} />
         <div className="col-span-2 flex items-center justify-between rounded-lg border px-3 py-2">
           <div className="flex items-center gap-2">
             <Switch id="rec-has-end" checked={hasEnd} onCheckedChange={setHasEnd} />

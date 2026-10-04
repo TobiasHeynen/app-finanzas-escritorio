@@ -3,6 +3,7 @@ import type { ServiceContext } from './context'
 import { createCardsService } from './cards'
 import { createExpensesService } from './expenses'
 import { createExportDataService } from './export-data'
+import { createGroupsService } from './groups'
 import { createIncomesService } from './incomes'
 import { createRecurringService } from './recurring'
 import { createReportService } from './report'
@@ -15,6 +16,7 @@ export function createServices<D extends SqlDb>(ctx: ServiceContext<D>) {
   return {
     ctx,
     expenses: createExpensesService(ctx),
+    groups: createGroupsService(ctx),
     incomes: createIncomesService(ctx),
     cards: createCardsService(ctx),
     recurring,

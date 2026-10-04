@@ -225,6 +225,10 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
 - **USD**: compra = aporte USD con `ars_cost_cents`; venta = retiro USD con ARS recibidos, que suman al
   disponible. Freelance en USD se carga como aporte de ahorro.
 - **Borrado con deshacer**: soft delete (`deleted_at`) en gastos, ingresos y movimientos de ahorro.
+- **Grupos** (2026-10-04): las personas son sólo nombres (sin cuentas). Un gasto, plan de cuotas o recurrente
+  puede tener grupo + quién pagó (`group_id` + `paid_by_member_id`, los dos o ninguno). El gasto suma **completo**
+  al mes (es la plata que salió); el grupo muestra lo que te deben. Reparto en partes iguales por defecto.
+  Sacar a alguien del grupo lo archiva: sus gastos siguen diciendo que pagó esa persona.
 
 ## Convenciones de código
 

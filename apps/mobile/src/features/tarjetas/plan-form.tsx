@@ -4,9 +4,10 @@ import { router } from 'expo-router'
 import { CheckCircle2, Circle } from 'lucide-react-native'
 import { formatMoney } from '@shared/money'
 import { compareMonths, currentMonth, formatMonthShort } from '@shared/months'
-import type { InstallmentPlan, PlanScope } from '@shared/types'
+import type { ExpenseGroup, InstallmentPlan, PlanScope } from '@shared/types'
 import { ChoiceSheet } from '@/components/choice-sheet'
 import { Field, FormScreen } from '@/components/form-screen'
+import { GroupChips } from '@/components/group-chips'
 import { Money } from '@/components/money'
 import { MoneyField } from '@/components/money-field'
 import { PaymentMethodChips } from '@/components/pickers'
@@ -30,6 +31,7 @@ export function PlanForm({ plan }: { plan: InstallmentPlan }) {
   const [total, setTotal] = useState<number | null>(plan.totalCents)
   const [totalValid, setTotalValid] = useState(true)
   const [count, setCount] = useState(String(plan.installmentsCount))
+  const [group, setGroup] = useState<ExpenseGroup | null>(plan.group)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [confirm, setConfirm] = useState<Confirm>(null)
 
@@ -69,6 +71,7 @@ export function PlanForm({ plan }: { plan: InstallmentPlan }) {
           totalCents: total,
           installmentsCount: countNum,
           notes: null,
+          group,
         },
       },
       { onError: (err) => setErrors({ _: err.message, ...err.fields }) },
@@ -139,6 +142,8 @@ export function PlanForm({ plan }: { plan: InstallmentPlan }) {
           </Field>
         </View>
       </View>
+
+      <GroupChips value={group} onChange={setGroup} error={errors['group']} />
 
       <Field label="Cuotas">
         <View style={[styles.list, { borderColor: c.border }]}>

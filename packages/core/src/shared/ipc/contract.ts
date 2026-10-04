@@ -10,6 +10,8 @@ import {
   exportRequestSchema,
   exportResultSchema,
   expenseSchema,
+  groupInputSchema,
+  groupSchema,
   idSchema,
   incomeInputSchema,
   incomeSchema,
@@ -91,6 +93,15 @@ export const ipcContract = {
   },
   'paymentMethods:archive': { input: archiveInput, output: paymentMethodSchema },
   'paymentMethods:reorder': { input: reorderInput, output: ok },
+
+  // ---------- Grupos ----------
+  'groups:list': { input: empty, output: z.array(groupSchema) },
+  'groups:create': { input: groupInputSchema, output: groupSchema },
+  'groups:update': {
+    input: z.object({ id: idSchema, data: groupInputSchema }).strict(),
+    output: groupSchema,
+  },
+  'groups:archive': { input: archiveInput, output: groupSchema },
 
   // ---------- Mes ----------
   'month:overview': {

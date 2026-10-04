@@ -1,5 +1,6 @@
 import type { SqlDb as Db } from '../db/sql'
-import { notFound } from './util'
+import type { ExpenseGroup } from '@shared/types'
+import { groupParams, notFound } from './util'
 
 export interface PlanRow {
   id: number
@@ -10,6 +11,8 @@ export interface PlanRow {
   total_cents: number
   installments_count: number
   first_charge_month: string
+  group_id: number | null
+  paid_by_member_id: number | null
 }
 
 export interface PlanWrite {
@@ -20,7 +23,10 @@ export interface PlanWrite {
   totalCents: number
   installmentsCount: number
   firstChargeMonth: string
+  group: ExpenseGroup | null
 }
+
+const params = ({ group, ...w }: PlanWrite) => ({ ...w, ...groupParams(group) })
 
 export type InstallmentPlansRepo = ReturnType<typeof createInstallmentPlansRepo>
 
@@ -29,14 +35,15 @@ export function createInstallmentPlansRepo(db: Db) {
     get: db.prepare<[number], PlanRow>('SELECT * FROM installment_plans WHERE id = ?'),
     insert: db.prepare(
       `INSERT INTO installment_plans (description, subcategory_id, payment_method_id, purchase_date,
-         total_cents, installments_count, first_charge_month)
+         total_cents, installments_count, first_charge_month, group_id, paid_by_member_id)
        VALUES (@description, @subcategoryId, @paymentMethodId, @purchaseDate, @totalCents,
-         @installmentsCount, @firstChargeMonth)`,
+         @installmentsCount, @firstChargeMonth, @groupId, @paidByMemberId)`,
     ),
     update: db.prepare(
       `UPDATE installment_plans SET description = @description, subcategory_id = @subcategoryId,
          payment_method_id = @paymentMethodId, purchase_date = @purchaseDate, total_cents = @totalCents,
-         installments_count = @installmentsCount, first_charge_month = @firstChargeMonth
+         installments_count = @installmentsCount, first_charge_month = @firstChargeMonth,
+         group_id = @groupId, paid_by_member_id = @paidByMemberId
        WHERE id = @id`,
     ),
     /** Planes con cuotas vivas desde un mes (para la pantalla de tarjetas). */
@@ -53,9 +60,9 @@ export function createInstallmentPlansRepo(db: Db) {
 
   return {
     get: (id: number): PlanRow => stmts.get.get(id) ?? notFound('El plan de cuotas'),
-    insert: (w: PlanWrite): number => Number(stmts.insert.run(w).lastInsertRowid),
+    insert: (w: PlanWrite): number => Number(stmts.insert.run(params(w)).lastInsertRowid),
     update: (id: number, w: PlanWrite): void => {
-      if (stmts.update.run({ ...w, id }).changes === 0) notFound('El plan de cuotas')
+      if (stmts.update.run({ ...params(w), id }).changes === 0) notFound('El plan de cuotas')
     },
     activeFrom: (month: string): PlanRow[] => stmts.activeFrom.all(month),
     purgeOrphans: (): number => stmts.purgeOrphans.run().changes,

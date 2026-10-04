@@ -3,6 +3,7 @@ import { compareMonths, dateInMonth, type Month } from '@shared/months'
 import type { ProjectedExpense, RecurringTemplate, RecurringTemplateInput } from '@shared/types'
 import { currentMonthOf, type ServiceContext } from './context'
 import { monthsToGenerate, templateAppliesTo } from './recurring-schedule'
+import { checkExpenseGroup } from './groups'
 
 export type RecurringService = ReturnType<typeof createRecurringService>
 
@@ -46,6 +47,7 @@ export function createRecurringService({ db, repos, clock }: ServiceContext) {
             installmentNumber: null,
             recurringTemplateId: t.id,
             notes: null,
+            group: t.group,
           })
           recurring.markGenerated(t.id, month, expenseId)
           created++
@@ -70,6 +72,7 @@ export function createRecurringService({ db, repos, clock }: ServiceContext) {
         amountCents: t.defaultAmountCents,
         date: dateInMonth(month, t.dayOfMonth),
         month,
+        group: t.group,
       }))
   }
 
@@ -79,14 +82,17 @@ export function createRecurringService({ db, repos, clock }: ServiceContext) {
     list: (): RecurringTemplate[] => recurring.list(),
     create(input: RecurringTemplateInput): RecurringTemplate {
       checkRefs(input)
-      const id = recurring.insert(input)
+      const id = recurring.insert({ ...input, group: checkExpenseGroup(repos, input.group) })
       generateDue()
       return recurring.get(id)
     },
     update(id: number, input: RecurringTemplateInput): RecurringTemplate {
       const previous = recurring.get(id)
       checkRefs(input, previous)
-      recurring.update(id, input)
+      recurring.update(id, {
+        ...input,
+        group: checkExpenseGroup(repos, input.group, previous.group),
+      })
       generateDue()
       return recurring.get(id)
     },

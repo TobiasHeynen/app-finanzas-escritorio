@@ -1,7 +1,7 @@
 import type { SqlDb as Db } from '../db/sql'
 import type { RecurringTemplate, RecurringTemplateInput } from '@shared/types'
 import type { Month } from '@shared/months'
-import { notFound } from './util'
+import { groupParams, notFound, toExpenseGroup } from './util'
 
 interface Row {
   id: number
@@ -14,6 +14,8 @@ interface Row {
   start_month: string
   end_month: string | null
   active: number
+  group_id: number | null
+  paid_by_member_id: number | null
 }
 
 const toTemplate = (r: Row): RecurringTemplate => ({
@@ -27,6 +29,7 @@ const toTemplate = (r: Row): RecurringTemplate => ({
   startMonth: r.start_month,
   endMonth: r.end_month,
   active: r.active === 1,
+  group: toExpenseGroup(r),
 })
 
 const SELECT = `SELECT t.*, s.category_id FROM recurring_templates t JOIN subcategories s ON s.id = t.subcategory_id`
@@ -39,14 +42,15 @@ export function createRecurringRepo(db: Db) {
     get: db.prepare<[number], Row>(`${SELECT} WHERE t.id = ?`),
     insert: db.prepare(
       `INSERT INTO recurring_templates (description, subcategory_id, payment_method_id, default_amount_cents,
-         day_of_month, start_month, end_month, active)
+         day_of_month, start_month, end_month, active, group_id, paid_by_member_id)
        VALUES (@description, @subcategoryId, @paymentMethodId, @defaultAmountCents, @dayOfMonth,
-         @startMonth, @endMonth, @active)`,
+         @startMonth, @endMonth, @active, @groupId, @paidByMemberId)`,
     ),
     update: db.prepare(
       `UPDATE recurring_templates SET description = @description, subcategory_id = @subcategoryId,
          payment_method_id = @paymentMethodId, default_amount_cents = @defaultAmountCents,
-         day_of_month = @dayOfMonth, start_month = @startMonth, end_month = @endMonth, active = @active
+         day_of_month = @dayOfMonth, start_month = @startMonth, end_month = @endMonth, active = @active,
+         group_id = @groupId, paid_by_member_id = @paidByMemberId
        WHERE id = @id`,
     ),
     delete: db.prepare('DELETE FROM recurring_templates WHERE id = ?'),
@@ -61,7 +65,11 @@ export function createRecurringRepo(db: Db) {
     ),
   }
 
-  const params = (input: RecurringTemplateInput) => ({ ...input, active: input.active ? 1 : 0 })
+  const params = ({ group, ...input }: RecurringTemplateInput) => ({
+    ...input,
+    ...groupParams(group ?? null),
+    active: input.active ? 1 : 0,
+  })
 
   return {
     list: (): RecurringTemplate[] => stmts.list.all().map(toTemplate),

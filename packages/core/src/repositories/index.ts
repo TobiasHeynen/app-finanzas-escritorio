@@ -1,6 +1,7 @@
 import type { SqlDb as Db } from '../db/sql'
 import { createCatalogRepo } from './catalog'
 import { createExpensesRepo } from './expenses'
+import { createGroupsRepo } from './groups'
 import { createIncomesRepo } from './incomes'
 import { createInstallmentPlansRepo } from './installment-plans'
 import { createPaymentMethodsRepo } from './payment-methods'
@@ -12,6 +13,7 @@ export function createRepos(db: Db) {
   return {
     catalog: createCatalogRepo(db),
     paymentMethods: createPaymentMethodsRepo(db),
+    groups: createGroupsRepo(db),
     settings: createSettingsRepo(db),
     expenses: createExpensesRepo(db),
     plans: createInstallmentPlansRepo(db),

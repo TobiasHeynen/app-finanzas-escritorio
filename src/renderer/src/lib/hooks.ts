@@ -11,6 +11,7 @@ import { ApiError, call } from './api'
 export const keys = {
   categories: ['categories'] as const,
   paymentMethods: ['paymentMethods'] as const,
+  groups: ['groups'] as const,
   month: (month: string) => ['month', month] as const,
   monthAll: ['month'] as const,
   expenses: ['expenses'] as const,

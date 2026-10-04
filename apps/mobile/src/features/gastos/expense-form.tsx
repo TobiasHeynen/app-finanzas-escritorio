@@ -15,8 +15,9 @@ import { CalendarClock, CreditCard, RotateCcw, Trash2, X } from 'lucide-react-na
 import { computeChargeMonth } from '@shared/domain/charge-month'
 import { formatMoney, splitInstallments } from '@shared/money'
 import { formatMonthLong, isIsoDate, monthOf, todayIso, type Month } from '@shared/months'
-import type { Expense } from '@shared/types'
+import type { Expense, ExpenseGroup } from '@shared/types'
 import { DateField } from '@/components/date-field'
+import { GroupChips } from '@/components/group-chips'
 import { PaymentMethodIcon } from '@/components/icons'
 import { MoneyField } from '@/components/money-field'
 import { MonthStepper } from '@/components/month-stepper'
@@ -26,7 +27,7 @@ import type { ApiError } from '@/lib/api'
 import { useCatalog } from '@/lib/catalog'
 import { movementKeys, useApiMutation } from '@/lib/hooks'
 import { useDeleteExpense } from '@/lib/movements'
-import { readLastMethod, rememberMethod } from '@/lib/prefs'
+import { readLastMethod, rememberMethod, rememberPayer } from '@/lib/prefs'
 import { radius, space, useColors } from '@/lib/theme'
 import type { ExpenseDefaults } from './open-expense'
 
@@ -64,6 +65,7 @@ export function ExpenseForm({
     expense?.description ?? defaults?.description ?? '',
   )
   const [notes, setNotes] = useState(expense?.notes ?? '')
+  const [group, setGroup] = useState<ExpenseGroup | null>(expense?.group ?? null)
   const [inInstallments, setInInstallments] = useState(false)
   const [count, setCount] = useState('3')
   const [startAt, setStartAt] = useState('1')
@@ -118,6 +120,7 @@ export function ExpenseForm({
 
   const onDone = (another: boolean) => {
     if (paymentMethodId !== null) rememberMethod(paymentMethodId)
+    rememberPayer(group)
     if (another) resetForNext()
     else router.back()
   }
@@ -161,6 +164,7 @@ export function ExpenseForm({
       description: description.trim(),
       purchaseDate,
       notes: notes.trim() || null,
+      group,
     }
     const options = { onSuccess: () => onDone(another), onError: fieldErrors }
     if (inInstallments && amount !== null) {
@@ -285,6 +289,8 @@ export function ExpenseForm({
               onChangeText={setDescription}
             />
           </View>
+
+          <GroupChips value={group} onChange={setGroup} error={errors['group']} />
 
           {!expense ? (
             <View style={[styles.box, { borderColor: c.border, backgroundColor: c.muted }]}>

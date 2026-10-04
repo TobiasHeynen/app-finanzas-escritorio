@@ -1,0 +1,35 @@
+import { expect, test } from './fixtures'
+
+test('armar un grupo y cargar un gasto eligiendo quién pagó', async ({ page }) => {
+  await page.getByRole('link', { name: 'Configuración' }).click()
+  await page.getByRole('tab', { name: 'Grupos' }).click()
+  await expect(page.getByText('Todavía no armaste ningún grupo.')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Grupo', exact: true }).click()
+  const groupDialog = page.getByRole('dialog')
+  await groupDialog.locator('#group-name').fill('Casa')
+  await groupDialog.getByLabel('Persona 1').fill('Tobi')
+  await groupDialog.getByLabel('Persona 2').fill('Ana')
+  await groupDialog.getByRole('button', { name: 'Guardar' }).click()
+  await expect(page.getByText('Grupo creado')).toBeVisible()
+  await expect(page.getByText('Tobi, Ana')).toBeVisible()
+
+  await page.keyboard.press('Control+n')
+  const dialog = page.getByRole('dialog')
+  await dialog.locator('#expense-amount').fill('40.000')
+  await dialog.locator('#expense-category').click()
+  await page.getByPlaceholder('Buscar…').fill('Chino')
+  await page.keyboard.press('Enter')
+  await dialog.locator('#expense-description').fill('Cena')
+  await dialog.locator('#expense-group').click()
+  await page.getByRole('option', { name: 'Casa' }).click()
+  await expect(dialog.locator('#expense-payer')).toContainText('Tobi')
+  await dialog.locator('#expense-payer').click()
+  await page.getByRole('option', { name: 'Ana' }).click()
+  await dialog.getByRole('button', { name: 'Guardar', exact: true }).click()
+  await expect(page.getByText('Gasto guardado')).toBeVisible()
+
+  await page.getByRole('link', { name: 'Inicio' }).click()
+  const row = page.getByTestId('expense-row').filter({ hasText: 'Cena' })
+  await expect(row).toContainText('Casa · pagó Ana')
+})
