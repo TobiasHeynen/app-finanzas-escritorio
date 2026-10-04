@@ -3,7 +3,9 @@ import { CalendarClock, CreditCard, RotateCcw, StickyNote } from 'lucide-react'
 import { computeChargeMonth } from '@shared/domain/charge-month'
 import { formatMoney, splitInstallments } from '@shared/money'
 import { formatMonthLong, isIsoDate, monthOf, todayIso, type Month } from '@shared/months'
-import type { Expense, ExpenseGroup } from '@shared/types'
+import { sumCents } from '@shared/money'
+import type { Expense, ExpenseGroup, ExpenseSplit } from '@shared/types'
+import { SplitEditor } from '@renderer/components/split-editor'
 import { GroupFields } from '@renderer/components/group-fields'
 import { MoneyInput } from '@renderer/components/money-input'
 import { MonthStepper } from '@renderer/components/month-stepper'
@@ -24,7 +26,7 @@ import { Label } from '@renderer/components/ui/label'
 import { Switch } from '@renderer/components/ui/switch'
 import { Textarea } from '@renderer/components/ui/textarea'
 import { useCatalog } from '@renderer/lib/catalog'
-import { rememberPayer } from '@renderer/lib/groups'
+import { defaultSplit, rememberPayer, useGroupsIndex } from '@renderer/lib/groups'
 import { movementKeys, useApiMutation } from '@renderer/lib/hooks'
 import { cn } from '@renderer/lib/utils'
 
@@ -118,9 +120,18 @@ function ExpenseForm({
     expense?.description ?? defaults?.description ?? '',
   )
   const [notes, setNotes] = useState(expense?.notes ?? '')
-  const [group, setGroup] = useState<ExpenseGroup | null>(expense?.group ?? null)
+  const [group, setGroup] = useState<ExpenseGroup | null>(
+    expense?.group
+      ? { groupId: expense.group.groupId, paidByMemberId: expense.group.paidByMemberId }
+      : null,
+  )
+  /** null = partes iguales entre todos (lo que propone el server si no viene reparto). */
+  const [split, setSplit] = useState<ExpenseSplit | null>(expense?.group?.split ?? null)
+  const groupsIndex = useGroupsIndex()
+  const groupEntity = group ? groupsIndex.groupById.get(group.groupId) : undefined
   const [showNotes, setShowNotes] = useState(Boolean(expense?.notes))
   const [inInstallments, setInInstallments] = useState(false)
+  const showSplit = Boolean(groupEntity) && !inInstallments
   const [count, setCount] = useState('3')
   const [startAt, setStartAt] = useState('1')
   const [override, setOverride] = useState<Month | null>(
@@ -210,6 +221,14 @@ function ExpenseForm({
       else if (!(startNum >= 1 && startNum <= countNum))
         next['startAtInstallment'] = `Entre 1 y ${countNum}`
     }
+    if (showSplit && split?.kind === 'equal' && split.memberIds.length === 0)
+      next['split'] = 'Elegí al menos una persona'
+    if (
+      showSplit &&
+      split?.kind === 'custom' &&
+      sumCents(split.shares.map((x) => x.cents)) !== amount
+    )
+      next['split'] = 'Las partes tienen que sumar el monto'
     setErrors(next)
     if (Object.keys(next).length > 0 || subcategoryId === null || paymentMethodId === null) return
 
@@ -221,6 +240,7 @@ function ExpenseForm({
       notes: notes.trim() || null,
       group,
     }
+    const withSplit = { ...common, group: group && split ? { ...group, split } : group }
     const options = { onSuccess: () => onDone(another), onError: fieldErrors }
     if (inInstallments && amount !== null) {
       createPlan.mutate(
@@ -235,11 +255,14 @@ function ExpenseForm({
       )
     } else if (expense) {
       update.mutate(
-        { id: expense.id, data: { ...common, amountCents: amount, chargeMonthOverride: override } },
+        {
+          id: expense.id,
+          data: { ...withSplit, amountCents: amount, chargeMonthOverride: override },
+        },
         options,
       )
     } else {
-      create.mutate({ ...common, amountCents: amount, chargeMonthOverride: override }, options)
+      create.mutate({ ...withSplit, amountCents: amount, chargeMonthOverride: override }, options)
     }
   }
 
@@ -324,7 +347,24 @@ function ExpenseForm({
             onChange={(e) => setDescription(e.target.value)}
           />
         </div>
-        <GroupFields idPrefix="expense" value={group} onChange={setGroup} error={errors['group']} />
+        <GroupFields
+          idPrefix="expense"
+          value={group}
+          onChange={(g) => {
+            if (g?.groupId !== group?.groupId) setSplit(null)
+            setGroup(g)
+          }}
+          error={errors['group']}
+        />
+        {showSplit && groupEntity && (
+          <SplitEditor
+            group={groupEntity}
+            amount={amount}
+            value={split ?? defaultSplit(groupEntity)}
+            onChange={setSplit}
+            error={errors['split']}
+          />
+        )}
       </div>
 
       {!expense && (
