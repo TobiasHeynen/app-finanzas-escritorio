@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, shell } from 'electron'
-import { copyFileSync, existsSync, mkdirSync, renameSync, rmSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { AppError } from '@shared/errors'
 import {
@@ -11,6 +11,7 @@ import {
 } from './db/backup'
 import { openDatabase, type Db } from './db/connection'
 import { getSchemaVersion, pendingMigrations } from '@core/db/migrate'
+import { withoutWal } from '@core/db/backup-rules'
 import { backupsDir, dbPath } from './paths'
 
 /** Antes de migrar una base existente, la respalda (por si la migración sale mal). */
@@ -76,6 +77,16 @@ export function createBackupActions(db: Db) {
       if (!existsSync(file)) throw new AppError('NOT_FOUND', 'El backup ya no existe')
       return restoreFrom(file)
     },
+    /** Restaura una imagen de la base que llegó de otro lado (el backup de Google Drive). */
+    async restoreFromBytes(bytes: Uint8Array): Promise<{ restarting: boolean }> {
+      const file = `${dbPath()}.descargado`
+      writeFileSync(file, withoutWal(bytes))
+      try {
+        return await restoreFrom(file)
+      } finally {
+        rmSync(file, { force: true })
+      }
+    },
     async restoreFromFile(): Promise<{ restarting: boolean }> {
       const options: Electron.OpenDialogOptions = {
         title: 'Elegí un backup de Chanchito',
@@ -93,3 +104,5 @@ export function createBackupActions(db: Db) {
     },
   }
 }
+
+export type BackupActions = ReturnType<typeof createBackupActions>

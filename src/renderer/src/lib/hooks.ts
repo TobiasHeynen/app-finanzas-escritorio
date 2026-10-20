@@ -24,6 +24,8 @@ export const keys = {
   cards: ['cards'] as const,
   report: ['report'] as const,
   backups: ['backups'] as const,
+  cloud: ['cloud'] as const,
+  cloudList: ['cloud', 'list'] as const,
   appInfo: ['appInfo'] as const,
 }
 

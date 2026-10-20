@@ -18,6 +18,7 @@ import { Button } from '@renderer/components/ui/button'
 import { Card } from '@renderer/components/ui/card'
 import { Skeleton } from '@renderer/components/ui/skeleton'
 import { keys, useApiMutation, useApiQuery } from '@renderer/lib/hooks'
+import { CloudSection } from './cloud-section'
 
 const REASON_LABELS: Record<BackupInfo['reason'], string> = {
   inicio: 'Automático',
@@ -57,6 +58,8 @@ export function BackupsSection() {
           cada tipo en la carpeta de la app.
         </p>
       </div>
+
+      <CloudSection onRestarting={() => setRestarting(true)} />
 
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => create.mutate({})} disabled={create.isPending}>

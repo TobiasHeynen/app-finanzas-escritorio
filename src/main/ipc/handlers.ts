@@ -1,5 +1,6 @@
 import { app } from 'electron'
-import { createBackupActions } from '../backups'
+import type { BackupActions } from '../backups'
+import type { DesktopCloud } from '../cloud'
 import { exportToFile, revealLastExport } from '../export-file'
 import { dbPath } from '../paths'
 import type { Services } from '../services'
@@ -8,9 +9,12 @@ import type { IpcHandlers } from '@core/api/dispatch'
 
 const ok = { ok: true } as const
 
-export function createHandlers(services: Services): IpcHandlers {
+export function createHandlers(
+  services: Services,
+  backups: BackupActions,
+  cloud: DesktopCloud,
+): IpcHandlers {
   const { clock } = services.ctx
-  const backups = createBackupActions(services.ctx.db)
   return {
     'app:ping': ({ message }) => ({
       reply: `pong: ${message}`,
@@ -41,5 +45,16 @@ export function createHandlers(services: Services): IpcHandlers {
     },
     'backups:restore': ({ name }) => backups.restore(name),
     'backups:restoreFromFile': () => backups.restoreFromFile(),
+
+    // Backup en Google Drive
+    'cloud:status': () => cloud.status(),
+    'cloud:connect': () => cloud.connect(),
+    'cloud:disconnect': async () => {
+      await cloud.disconnect()
+      return ok
+    },
+    'cloud:backupNow': () => cloud.backupNow(),
+    'cloud:list': () => cloud.list(),
+    'cloud:restore': ({ id }) => cloud.restore(id),
   }
 }
