@@ -21,6 +21,8 @@ describe('repositorio de categorías', () => {
     const { repos } = createTestContext()
     const c = repos.catalog.createCategory({ name: 'Mascotas', icon: 'dog', color: '#123456' })
     expect(c.sortOrder).toBe(9)
+    // Arranca con "General" para poder cargarle gastos enseguida.
+    expect(c.subcategories.map((s) => s.name)).toEqual(['General'])
     expect(() =>
       repos.catalog.createCategory({ name: 'mascotas', icon: 'dog', color: '#123456' }),
     ).toThrow(AppError)

@@ -51,6 +51,32 @@ describe('migraciones', () => {
     ).toEqual({ amount_cents: 1000, group_id: null, paid_by_member_id: null })
   })
 
+  it('la 004 le da "General" a las categorías activas que no tenían subcategorías activas', () => {
+    const db = openDatabase(':memory:')
+    migrate(db, migrations.slice(0, 3))
+    seed(db)
+    const add = db.prepare(
+      "INSERT INTO categories (name, icon, color, sort_order) VALUES (?, 'tag', '#000000', 99)",
+    )
+    const vacia = Number(add.run('Vacía').lastInsertRowid)
+    const conArchivada = Number(add.run('Con General archivada').lastInsertRowid)
+    db.prepare(
+      "INSERT INTO subcategories (category_id, name, archived_at) VALUES (?, 'General', '2026-01-01')",
+    ).run(conArchivada)
+    const subsBefore = db.prepare('SELECT COUNT(*) AS n FROM subcategories').get() as { n: number }
+    migrate(db)
+    const active = (id: number) =>
+      db
+        .prepare('SELECT name FROM subcategories WHERE category_id = ? AND archived_at IS NULL')
+        .all(id)
+    expect(active(vacia)).toEqual([{ name: 'General' }])
+    expect(active(conArchivada)).toEqual([{ name: 'General' }])
+    // Las del seed ya tenían subcategorías: sólo se suma la de "Vacía".
+    expect(db.prepare('SELECT COUNT(*) AS n FROM subcategories').get()).toEqual({
+      n: subsBefore.n + 1,
+    })
+  })
+
   it('es idempotente: correr dos veces no aplica nada nuevo', () => {
     const db = openDatabase(':memory:')
     migrate(db)
