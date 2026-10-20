@@ -19,7 +19,11 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+      # Cliente OAuth de Google para el backup en Drive (si no están los secrets, la función no aparece).
       - run: npx electron-vite build
+        env:
+          MAIN_VITE_GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_DESKTOP_CLIENT_ID }}
+          MAIN_VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_DESKTOP_CLIENT_SECRET }}
       - name: E2E
         run: npx playwright test
       - name: Instalador NSIS y paquete para Microsoft Store

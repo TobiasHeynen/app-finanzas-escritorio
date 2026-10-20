@@ -157,7 +157,12 @@ describe('backup en Google Drive', () => {
       name: 'chanchito-android-x.db',
       createdTime: '2020-01-01T00:00:00.000Z',
       size: 3,
-      appProperties: { app: 'chanchito', device: 'otro', deviceName: 'Celular', platform: 'android' },
+      appProperties: {
+        app: 'chanchito',
+        device: 'otro',
+        deviceName: 'Celular',
+        platform: 'android',
+      },
       bytes: new Uint8Array(3),
     })
     for (let i = 0; i < 9; i++) await t.cloud.backupNow()
@@ -248,9 +253,9 @@ describe('backup en Google Drive', () => {
     expect(shouldAutoBackup({ trigger: 'close', now, lastBackupAt: ago(11), changed: true })).toBe(
       true,
     )
-    expect(
-      shouldAutoBackup({ trigger: 'close', now, lastBackupAt: ago(60), changed: false }),
-    ).toBe(false)
+    expect(shouldAutoBackup({ trigger: 'close', now, lastBackupAt: ago(60), changed: false })).toBe(
+      false,
+    )
   })
 
   it('conectar y desconectar limpian el estado del último backup', async () => {

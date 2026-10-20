@@ -13,13 +13,15 @@
         <a href="./"><img src="icon.png" alt="" /></a>
         <div>
           <h1>Política de privacidad</h1>
-          <span class="muted">Chanchito · última actualización: 2 de octubre de 2026</span>
+          <span class="muted">Chanchito · última actualización: 20 de octubre de 2026</span>
         </div>
       </header>
 
       <div class="card">
         <strong>En corto: Chanchito no recolecta, no envía y no comparte ningún dato.</strong>
-        Todo lo que cargás queda guardado únicamente en tu computadora o en tu celular.
+        Todo lo que cargás queda guardado en tu computadora o en tu celular. Si activás el backup en
+        Google Drive (opcional), una copia va a tu propio Drive y nunca pasa por servidores de
+        Chanchito.
       </div>
 
       <h2>Qué datos maneja la app</h2>
@@ -32,8 +34,11 @@
 
       <h2>Qué datos NO se recolectan</h2>
       <ul>
-        <li>No hay cuentas, registro ni inicio de sesión.</li>
-        <li>No hay servidores propios: la app no se conecta a internet para funcionar.</li>
+        <li>No hay cuentas propias ni registro. Conectar una cuenta de Google es opcional.</li>
+        <li>
+          No hay servidores propios: la app funciona sin internet y sólo se conecta a Google si
+          activás el backup en Drive.
+        </li>
         <li>No hay analíticas, telemetría, publicidad ni rastreadores.</li>
         <li>No se venden ni se comparten datos con nadie, porque no nos llega ninguno.</li>
       </ul>
@@ -50,6 +55,42 @@
         Google, cifrada y asociada a tu cuenta; no llega a Chanchito.
       </p>
 
+      <h2>Backup en Google Drive (opcional)</h2>
+      <p>
+        En Configuración → Backups podés conectar tu cuenta de Google para que Chanchito guarde
+        copias de tus datos en tu Drive. Si no lo activás, la app no se conecta a Google.
+      </p>
+      <ul>
+        <li>
+          Chanchito sólo pide el permiso <code>drive.appdata</code>: acceso a una carpeta oculta de
+          tu Drive que sólo ve esta app. No puede ver, leer ni modificar el resto de tus archivos.
+          También se usa tu dirección de mail, sólo para mostrarte con qué cuenta estás conectado.
+        </li>
+        <li>
+          Lo que se sube es el mismo archivo de backup que se guarda en tu equipo, con tus gastos,
+          ingresos, tarjetas y ahorros. Va directo de tu dispositivo a tu Drive: no pasa por ningún
+          servidor de Chanchito y nadie más que vos (y Google, como proveedor de tu Drive) tiene
+          acceso.
+        </li>
+        <li>
+          Se hace un backup por día y al cerrar la app si hubo cambios, y se guardan los últimos 7 de
+          cada dispositivo. El permiso de acceso queda guardado de forma segura en tu dispositivo.
+        </li>
+        <li>
+          Podés desconectar la cuenta cuando quieras desde la app. Para borrar los backups, en Google
+          Drive entrá a Configuración → Administrar aplicaciones → Chanchito → Borrar datos
+          ocultos de la app. También podés quitarle el acceso desde
+          <a href="https://myaccount.google.com/permissions">tu cuenta de Google</a>.
+        </li>
+        <li>
+          El uso y la transferencia a cualquier otra app de la información recibida de las API de
+          Google cumplen con la
+          <a href="https://developers.google.com/terms/api-services-user-data-policy"
+            >Política de datos del usuario de los servicios de API de Google</a
+          >, incluidos los requisitos de Uso limitado.
+        </li>
+      </ul>
+
       <h2>Microsoft Store</h2>
       <p>
         Si instalaste Chanchito desde Microsoft Store, Microsoft puede recopilar datos de la
@@ -63,8 +104,8 @@
         Si instalaste Chanchito desde Google Play, Google puede recopilar datos de la descarga y del
         uso del dispositivo según su propia
         <a href="https://policies.google.com/privacy?hl=es-419">política de privacidad</a>. Esa
-        información no llega a Chanchito. La app no pide permisos de internet, ubicación, contactos
-        ni cámara.
+        información no llega a Chanchito. La app sólo usa internet para el backup en Google Drive, si
+        lo activás, y no pide permisos de ubicación, contactos ni cámara.
       </p>
 
       <h2>Cómo borrar tus datos</h2>
@@ -73,7 +114,8 @@
         borrarlos del todo, eliminá la carpeta <code>%APPDATA%\Chanchito</code> (o
         <code>%APPDATA%\Mis Finanzas</code> si usaste una versión anterior). Si la instalaste desde
         la Store, se borran al desinstalarla. En Android, se borran al desinstalar la app o desde
-        Ajustes → Apps → Chanchito → Almacenamiento → Borrar datos.
+        Ajustes → Apps → Chanchito → Almacenamiento → Borrar datos. Los backups en Google Drive se
+        borran desde Drive, como se explica más arriba.
       </p>
 
       <h2>Contacto</h2>

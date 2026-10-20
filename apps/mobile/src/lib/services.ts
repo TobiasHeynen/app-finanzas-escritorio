@@ -9,6 +9,7 @@ import { initApi } from './api'
 import { DB_NAME } from './db-name'
 import { createBackup, registerBackupHandlers } from './backups'
 import { registerExportHandlers } from './export'
+import { registerCloudHandlers } from './cloud'
 
 export interface AppServices {
   services: Services
@@ -38,6 +39,7 @@ export function getAppServices(): AppServices {
   initApi(services)
   registerExportHandlers(services)
   registerBackupHandlers(raw)
+  registerCloudHandlers(raw)
   current = { services, seeded }
   return current
 }

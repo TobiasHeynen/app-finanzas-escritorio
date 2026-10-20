@@ -51,7 +51,10 @@ export interface CloudBackupDeps {
   /** Contador de cambios de la conexión (SQLite `total_changes()`). */
   changeCounter(): number
   /** Restaura los bytes con el mismo camino que un backup local. */
-  restore(bytes: Uint8Array, label: string): { restarting: boolean } | Promise<{ restarting: boolean }>
+  restore(
+    bytes: Uint8Array,
+    label: string,
+  ): { restarting: boolean } | Promise<{ restarting: boolean }>
   randomId(): string
   now?: () => Date
 }
@@ -125,7 +128,10 @@ export function createCloudBackup(deps: CloudBackupDeps) {
 
   function requireConnected() {
     if (!deps.auth.isAvailable()) {
-      throw new AppError('FORBIDDEN', 'El backup en Google Drive no está disponible en esta versión')
+      throw new AppError(
+        'FORBIDDEN',
+        'El backup en Google Drive no está disponible en esta versión',
+      )
     }
     if (!deps.auth.account()) throw new AppError('FORBIDDEN', 'Conectá tu cuenta de Google primero')
   }
@@ -171,7 +177,10 @@ export function createCloudBackup(deps: CloudBackupDeps) {
 
     async connect(): Promise<CloudStatus> {
       if (!deps.auth.isAvailable()) {
-        throw new AppError('FORBIDDEN', 'El backup en Google Drive no está disponible en esta versión')
+        throw new AppError(
+          'FORBIDDEN',
+          'El backup en Google Drive no está disponible en esta versión',
+        )
       }
       await deps.auth.connect()
       save({ lastBackupAt: null, lastError: null })

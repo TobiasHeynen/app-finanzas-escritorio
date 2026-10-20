@@ -3,7 +3,8 @@
 App de escritorio (Windows) para control de gastos personales: gastos, ingresos y ahorros mes a mes,
 cuotas proyectadas, gastos recurrentes, tarjetas de crédito (el gasto cuenta en el mes en que se paga el
 resumen), ahorro en ARS y USD con metas, reporte anual y exportación a Excel/CSV.
-100% local: sin cuentas, sin login, sin backend remoto. UI en español rioplatense, formato es-AR.
+100% local: sin cuentas propias ni backend remoto. Único uso de internet: el backup **opcional** en Google Drive
+(ver abajo). UI en español rioplatense, formato es-AR.
 
 Plan y decisiones aprobadas: ver "Decisiones de producto" abajo. Las fases 0 a 8 del plan original están
 terminadas; los cambios nuevos van con lint + typecheck + tests (y e2e si tocan flujos de UI).
@@ -189,6 +190,21 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
   gastos (`;`, coma decimal, UTF-8 con BOM, para Excel en español). Los gastos pendientes no suman.
   Los datos, el resumen y el CSV salen de `@core/services/export-data`; la PC arma el xlsx con exceljs y el celu
   con el escritor de `packages/core/src/xlsx/` (exceljs no anda en React Native). Un test relee los dos con exceljs.
+
+## Backup en Google Drive (opcional)
+
+- Core: `packages/core/src/cloud/drive.ts` (cliente REST de `appDataFolder`, scope `drive.appdata`, `fetch` inyectado) y
+  `cloud-backup.ts` (sube la misma imagen de la base que los backups locales, deja los últimos 7 **por dispositivo**
+  según `appProperties.device`, auto: uno por día al iniciar y al cerrar/segundo plano si `total_changes()` cambió).
+  Canales `cloud:*` (de plataforma). Tests en `tests/unit/cloud-backup.test.ts` con un Drive falso.
+- PC: `src/main/cloud/` — OAuth de app de escritorio con PKCE + loopback en 127.0.0.1, refresh token cifrado con
+  `safeStorage` en `userData/cuenta-google.json`; estado en `userData/nube.json`. Cliente OAuth por env al compilar
+  (`MAIN_VITE_GOOGLE_CLIENT_ID/SECRET`, secrets `GOOGLE_DESKTOP_CLIENT_*` en `build.yml`); sin eso la sección no aparece.
+  Al cerrar se espera el backup hasta 15 s (`before-quit`). Todo en main: el renderer nunca ve tokens.
+- Celu: `apps/mobile/src/lib/cloud*.ts` con `@react-native-google-signin/google-signin` (selector nativo; los
+  tokens los maneja Play Services) y `expo/fetch` para cuerpos binarios. En web la función no existe
+  (`cloud-auth.web.ts`). La app pide permiso de INTERNET sólo por esto.
+- Configuración de Google Cloud (clientes OAuth, SHA-1): ver el PR de la función.
 
 ## Empaquetado y CI
 

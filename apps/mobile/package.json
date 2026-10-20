@@ -4,6 +4,7 @@
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/metro-runtime": "~57.0.16",
+    "@react-native-google-signin/google-signin": "~16.1.5",
     "@tanstack/react-query": "5.104.0",
     "date-fns": "4.4.0",
     "expo": "~57.0.26",

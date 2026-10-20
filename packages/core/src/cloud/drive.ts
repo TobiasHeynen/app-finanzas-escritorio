@@ -81,11 +81,7 @@ function toDriveFile(raw: RawFile): DriveFile | null {
 }
 
 /** Cuerpo `multipart/related` con los metadatos (JSON) y el contenido del archivo. */
-export function multipartBody(
-  metadata: unknown,
-  bytes: Uint8Array,
-  boundary: string,
-): Uint8Array {
+export function multipartBody(metadata: unknown, bytes: Uint8Array, boundary: string): Uint8Array {
   const enc = new TextEncoder()
   const head = enc.encode(
     `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n` +
@@ -114,7 +110,10 @@ export function createDriveClient(options: DriveClientOptions): DriveClient {
           headers: { ...init.headers, Authorization: `Bearer ${token}` },
         })
       } catch {
-        throw new AppError('INTERNAL', 'No hay conexión con Google Drive. Probá de nuevo más tarde.')
+        throw new AppError(
+          'INTERNAL',
+          'No hay conexión con Google Drive. Probá de nuevo más tarde.',
+        )
       }
       if (res.status === 401 && attempt === 0) {
         token = await getAccessToken(true)
@@ -161,7 +160,11 @@ export function createDriveClient(options: DriveClientOptions): DriveClient {
 
     async upload(name, bytes, appProperties) {
       const boundary = `chanchito-${Math.random().toString(36).slice(2)}`
-      const body = multipartBody({ name, parents: ['appDataFolder'], appProperties }, bytes, boundary)
+      const body = multipartBody(
+        { name, parents: ['appDataFolder'], appProperties },
+        bytes,
+        boundary,
+      )
       const res = await request(`${UPLOAD}?uploadType=multipart&fields=${FIELDS}`, {
         method: 'POST',
         headers: { 'Content-Type': `multipart/related; boundary=${boundary}` },

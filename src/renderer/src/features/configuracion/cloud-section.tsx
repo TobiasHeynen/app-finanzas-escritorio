@@ -94,9 +94,9 @@ export function CloudSection({ onRestarting }: { onRestarting: () => void }) {
             </>
           ) : (
             <p className="text-sm text-muted-foreground">
-              Opcional. Chanchito guarda una copia de tus datos en una carpeta oculta de tu Drive que
-              sólo ve la app: no puede leer el resto de tus archivos. Si cambiás de computadora o de
-              celular, te logueás y recuperás todo.
+              Opcional. Chanchito guarda una copia de tus datos en una carpeta oculta de tu Drive
+              que sólo ve la app: no puede leer el resto de tus archivos. Si cambiás de computadora
+              o de celular, te logueás y recuperás todo.
             </p>
           )}
         </div>

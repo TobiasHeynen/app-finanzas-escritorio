@@ -55,7 +55,9 @@ export function emailFromIdToken(idToken: unknown): string | null {
   const payload = idToken.split('.')[1]
   if (!payload) return null
   try {
-    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as { email?: unknown }
+    const data = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as {
+      email?: unknown
+    }
     return typeof data.email === 'string' ? data.email : null
   } catch {
     return null
