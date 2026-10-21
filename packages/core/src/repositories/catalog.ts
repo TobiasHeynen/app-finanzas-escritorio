@@ -27,6 +27,9 @@ const toSubcategory = (r: SubcategoryRow): Subcategory => ({
   archived: r.archived_at !== null,
 })
 
+/** Subcategoría con la que arranca una categoría nueva. */
+export const DEFAULT_SUBCATEGORY = 'General'
+
 const DUP_CATEGORY = { unique: 'Ya existe una categoría con ese nombre' }
 const DUP_SUBCATEGORY = { unique: 'Ya existe una subcategoría con ese nombre en esta categoría' }
 
@@ -95,11 +98,20 @@ export function createCatalogRepo(db: Db) {
       return { ...toSubcategory(row), categoryArchived: category.archived_at !== null }
     },
 
+    /**
+     * Los gastos se cargan en una subcategoría: una categoría nueva arranca con "General" para que se
+     * pueda usar enseguida (si no, no aparece al cargar un gasto).
+     */
     createCategory(input: CategoryInput): Category {
       try {
-        const { n } = stmts.nextCategoryOrder.get() ?? { n: 0 }
-        const info = stmts.insertCategory.run({ ...input, sortOrder: n })
-        return getCategory(Number(info.lastInsertRowid))
+        const id = db.transaction(() => {
+          const { n } = stmts.nextCategoryOrder.get() ?? { n: 0 }
+          const info = stmts.insertCategory.run({ ...input, sortOrder: n })
+          const categoryId = Number(info.lastInsertRowid)
+          stmts.insertSub.run(categoryId, DEFAULT_SUBCATEGORY, 0)
+          return categoryId
+        })()
+        return getCategory(id)
       } catch (err) {
         return translateSqliteError(err, DUP_CATEGORY)
       }
