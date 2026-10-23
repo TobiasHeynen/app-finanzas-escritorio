@@ -3,47 +3,216 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Chanchito</title>
+    <title>Chanchito · Tus finanzas mes a mes</title>
     <meta
       name="description"
-      content="Chanchito: tus finanzas personales mes a mes, gratis y 100% en tu computadora."
+      content="Gastos, tarjetas, cuotas y ahorros en pesos y dólares. Gratis, sin cuentas ni publicidad, y tus datos quedan en tu PC o tu celu."
     />
+    <link rel="canonical" href="https://chanchitoapp.com.ar/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:title" content="Chanchito · Tus finanzas mes a mes" />
+    <meta
+      property="og:description"
+      content="Gastos, tarjetas, cuotas y ahorros. Gratis, sin cuentas y 100% privada."
+    />
+    <meta property="og:url" content="https://chanchitoapp.com.ar/" />
+    <meta property="og:image" content="https://chanchitoapp.com.ar/img/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#15803d" />
     <link rel="icon" href="icon.png" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main>
-      <header>
-        <img src="icon.png" alt="" />
+    <main class="landing">
+      <nav class="topbar">
+        <a class="brand" href="./"><img src="icon.png" alt="" /> Chanchito</a>
+        <a href="#descargar" class="btn small">Descargar</a>
+      </nav>
+
+      <section class="hero">
         <div>
-          <h1>Chanchito</h1>
-          <span class="muted">Tus finanzas personales mes a mes. Gratis y sin cuentas.</span>
+          <h1>Sabé en qué se te va la plata cada mes.</h1>
+          <p class="lead">
+            Chanchito es una app de finanzas personales pensada para cómo pagamos en Argentina:
+            tarjetas por fecha de cierre, cuotas, gastos fijos y ahorros en pesos y dólares.
+          </p>
+          <p class="lead muted">
+            Gratis, sin cuentas, sin publicidad. Tus datos quedan en tu equipo.
+          </p>
+          <div class="ctas">
+            <a class="btn" href="https://apps.microsoft.com/search?query=Chanchito" rel="noopener"
+              >Bajala para Windows</a
+            >
+            <span class="btn ghost" aria-disabled="true">Android: muy pronto</span>
+          </div>
         </div>
-      </header>
+        <img
+          class="shot pc"
+          src="img/pc-inicio.webp"
+          width="1366"
+          height="768"
+          alt="Pantalla de inicio de Chanchito en la PC, con el disponible del mes"
+        />
+      </section>
 
-      <ul>
-        <li>Gastos con categorías, medios de pago y gastos fijos que se cargan solos.</li>
-        <li>
-          Tarjetas de crédito bien resueltas: el gasto cuenta en el mes en que pagás el resumen.
-        </li>
-        <li>Compras en cuotas proyectadas a futuro.</li>
-        <li>Ahorros en pesos y en dólares, con metas.</li>
-        <li>Reporte anual y exportación a Excel.</li>
-        <li>100% privada: tus datos quedan en tu computadora, con backups automáticos.</li>
-      </ul>
+      <section>
+        <h2>Lo que hace</h2>
+        <div class="grid">
+          <div class="card">
+            <h3>Disponible del mes</h3>
+            <p>Ingresos menos gastos y ahorro: cuánto te queda, de un vistazo.</p>
+          </div>
+          <div class="card">
+            <h3>Tarjetas bien resueltas</h3>
+            <p>Lo que comprás con tarjeta cuenta en el mes en que pagás el resumen.</p>
+          </div>
+          <div class="card">
+            <h3>Cuotas a futuro</h3>
+            <p>Cada compra en cuotas se proyecta y ves cuánto tenés comprometido.</p>
+          </div>
+          <div class="card">
+            <h3>Gastos fijos</h3>
+            <p>Alquiler, servicios y suscripciones se cargan solos todos los meses.</p>
+          </div>
+          <div class="card">
+            <h3>Ahorros y metas</h3>
+            <p>En pesos y en dólares, con compra y venta de USD y metas por mes.</p>
+          </div>
+          <div class="card">
+            <h3>Gastos compartidos</h3>
+            <p>Armá grupos, anotá quién pagó y Chanchito calcula quién le debe a quién.</p>
+          </div>
+          <div class="card">
+            <h3>Reporte anual</h3>
+            <p>
+              Todo lo que ganaste, gastaste y ahorraste, por categoría, con exportación a Excel.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Backups</h3>
+            <p>
+              Backups automáticos, y el mismo archivo sirve para pasar tus datos de la PC al celu.
+            </p>
+          </div>
+        </div>
+      </section>
 
-      <p><a href="privacidad.html">Política de privacidad</a></p>
+      <section>
+        <h2>Así se ve</h2>
+        <div class="gallery pcs">
+          <img
+            src="img/pc-tarjetas.webp"
+            width="1366"
+            height="768"
+            loading="lazy"
+            alt="Tarjetas de crédito y cuotas"
+          />
+          <img
+            src="img/pc-ahorros.webp"
+            width="1366"
+            height="768"
+            loading="lazy"
+            alt="Ahorros en pesos y dólares con metas"
+          />
+          <img
+            src="img/pc-reporte.webp"
+            width="1366"
+            height="768"
+            loading="lazy"
+            alt="Reporte anual por categoría"
+          />
+        </div>
+        <div class="gallery phones">
+          <img
+            src="img/celu-inicio.webp"
+            width="540"
+            height="960"
+            loading="lazy"
+            alt="Inicio en el celular"
+          />
+          <img
+            src="img/celu-cargar-gasto.webp"
+            width="540"
+            height="960"
+            loading="lazy"
+            alt="Cargar un gasto en el celular"
+          />
+          <img
+            src="img/celu-tarjetas.webp"
+            width="540"
+            height="960"
+            loading="lazy"
+            alt="Tarjetas en el celular"
+          />
+        </div>
+      </section>
 
-      <p>
-        ¿Dudas o sugerencias? Escribime a
-        <a href="mailto:chanchito.app.of@gmail.com">chanchito.app.of@gmail.com</a>.
-      </p>
+      <section class="card privacy">
+        <h2>Tus datos son tuyos</h2>
+        <p>
+          Chanchito no tiene servidores ni cuentas. Todo lo que cargás queda guardado en tu
+          computadora o en tu celular, sin analíticas, sin rastreadores y sin publicidad.
+          <a href="privacidad.html">Leé la política de privacidad</a>.
+        </p>
+      </section>
+
+      <section id="descargar">
+        <h2>Descargar</h2>
+        <div class="grid two">
+          <div class="card">
+            <h3>Windows 10 y 11</h3>
+            <p>Desde Microsoft Store, con actualizaciones automáticas.</p>
+            <a class="btn" href="https://apps.microsoft.com/search?query=Chanchito" rel="noopener"
+              >Abrir en Microsoft Store</a
+            >
+          </div>
+          <div class="card">
+            <h3>Android 7 o superior</h3>
+            <p>Está en prueba cerrada en Google Play. Muy pronto disponible para todos.</p>
+            <span class="btn ghost" aria-disabled="true">Muy pronto en Google Play</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Preguntas frecuentes</h2>
+        <details>
+          <summary>¿Es gratis de verdad?</summary>
+          <p>Sí. No tiene versión paga, ni publicidad, ni funciones bloqueadas.</p>
+        </details>
+        <details>
+          <summary>¿Puedo usarla en la PC y en el celu?</summary>
+          <p>
+            Sí. Hacés un backup en un equipo y lo restaurás en el otro: el archivo es el mismo para
+            Windows y Android.
+          </p>
+        </details>
+        <details>
+          <summary>¿Y si cambio de computadora o de celular?</summary>
+          <p>
+            Hacé un backup desde Configuración, pasalo al equipo nuevo y restauralo. Chanchito
+            también guarda backups automáticos en tu equipo.
+          </p>
+        </details>
+        <details>
+          <summary>¿Hay versión para iPhone o Mac?</summary>
+          <p>Por ahora no. Si te interesa, escribinos y lo tenemos en cuenta.</p>
+        </details>
+      </section>
 
       <footer>
-        © 2026 Tobias Heynen · Uso libre sin fines comerciales (<a
-          href="https://github.com/TobiasHeynen/app-finanzas-escritorio/blob/main/LICENSE.md"
-          >PolyForm Noncommercial 1.0.0</a
-        >)
+        <p>
+          ¿Dudas o sugerencias? Escribinos a
+          <a href="mailto:chanchito.app.of@gmail.com">chanchito.app.of@gmail.com</a>.
+        </p>
+        <p>
+          © 2026 Tobias Heynen · <a href="privacidad.html">Privacidad</a> · Uso libre sin fines
+          comerciales (<a
+            href="https://github.com/TobiasHeynen/app-finanzas-escritorio/blob/main/LICENSE.md"
+            >PolyForm Noncommercial 1.0.0</a
+          >)
+        </p>
       </footer>
     </main>
   </body>
