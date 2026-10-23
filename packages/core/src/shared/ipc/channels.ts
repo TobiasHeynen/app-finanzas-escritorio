@@ -65,6 +65,12 @@ export const IPC_CHANNELS = [
   'backups:openFolder',
   'backups:restore',
   'backups:restoreFromFile',
+  'cloud:status',
+  'cloud:connect',
+  'cloud:disconnect',
+  'cloud:backupNow',
+  'cloud:list',
+  'cloud:restore',
 ] as const
 
 export type IpcChannel = (typeof IPC_CHANNELS)[number]

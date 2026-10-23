@@ -2,6 +2,8 @@ import { z } from 'zod'
 import type { IpcChannel } from './channels'
 import {
   backupInfoSchema,
+  cloudBackupInfoSchema,
+  cloudStatusSchema,
   cardsOverviewSchema,
   categoryInputSchema,
   categorySchema,
@@ -229,6 +231,17 @@ export const ipcContract = {
     output: z.object({ restarting: z.boolean() }),
   },
   'backups:restoreFromFile': { input: empty, output: z.object({ restarting: z.boolean() }) },
+
+  // ---------- Backup en Google Drive ----------
+  'cloud:status': { input: empty, output: cloudStatusSchema },
+  'cloud:connect': { input: empty, output: cloudStatusSchema },
+  'cloud:disconnect': { input: empty, output: ok },
+  'cloud:backupNow': { input: empty, output: cloudStatusSchema },
+  'cloud:list': { input: empty, output: z.array(cloudBackupInfoSchema) },
+  'cloud:restore': {
+    input: z.object({ id: z.string().regex(/^[\w-]{10,200}$/) }).strict(),
+    output: z.object({ restarting: z.boolean() }),
+  },
 } as const satisfies Record<IpcChannel, { input: z.ZodType; output: z.ZodType }>
 
 export type IpcContract = typeof ipcContract

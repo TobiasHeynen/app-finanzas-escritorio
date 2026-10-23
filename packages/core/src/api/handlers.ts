@@ -14,6 +14,12 @@ export type PlatformChannel =
   | 'backups:openFolder'
   | 'backups:restore'
   | 'backups:restoreFromFile'
+  | 'cloud:status'
+  | 'cloud:connect'
+  | 'cloud:disconnect'
+  | 'cloud:backupNow'
+  | 'cloud:list'
+  | 'cloud:restore'
 
 export type CoreChannel = Exclude<IpcChannel, PlatformChannel>
 export type CoreHandlers = { [C in CoreChannel]: IpcHandler<C> }

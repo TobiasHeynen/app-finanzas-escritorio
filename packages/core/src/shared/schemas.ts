@@ -552,3 +552,20 @@ export const backupInfoSchema = z.object({
   createdAt: z.string(),
   sizeBytes: z.number().int(),
 })
+
+export const cloudStatusSchema = z.object({
+  available: z.boolean(),
+  connected: z.boolean(),
+  email: z.string().nullable(),
+  lastBackupAt: z.string().nullable(),
+  lastError: z.string().nullable(),
+})
+
+export const cloudBackupInfoSchema = z.object({
+  id: z.string(),
+  createdAt: z.string(),
+  sizeBytes: z.number().int(),
+  deviceName: z.string(),
+  platform: z.enum(['pc', 'android']),
+  thisDevice: z.boolean(),
+})

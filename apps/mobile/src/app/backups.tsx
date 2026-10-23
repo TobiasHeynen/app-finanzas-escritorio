@@ -5,6 +5,7 @@ import type { BackupInfo } from '@shared/types'
 import { ChoiceSheet } from '@/components/choice-sheet'
 import { Screen } from '@/components/screen'
 import { Button, Card, Muted, SectionTitle } from '@/components/ui'
+import { CloudCard } from '@/features/configuracion/cloud-card'
 import { shareBackup } from '@/lib/backups'
 import { keys, useApiMutation, useApiQuery } from '@/lib/hooks'
 import { radius, space, useColors } from '@/lib/theme'
@@ -61,6 +62,7 @@ export default function BackupsScreen() {
         Se hace un backup cada vez que abrís la app y se guardan los últimos 15 de cada tipo.
         Android además copia los datos de la app a tu cuenta de Google.
       </Muted>
+      <CloudCard onRestarting={() => setRestarting(true)} />
       <View style={{ gap: space(3) }}>
         <Button
           label="Hacer un backup ahora"

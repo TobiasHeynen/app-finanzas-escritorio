@@ -11,7 +11,8 @@ import { createMainWindow } from './window'
 import { registerIpcHandlers } from './ipc/register'
 import { createHandlers } from './ipc/handlers'
 import { backupsDir, dbPath } from './paths'
-import { backupBeforeMigrations } from './backups'
+import { backupBeforeMigrations, createBackupActions } from './backups'
+import { createDesktopCloud, type DesktopCloud } from './cloud'
 import { createBackup } from './db/backup'
 
 // Locale de Chromium en es-AR: inputs de fecha dd/mm/aaaa y textos nativos en español.
@@ -27,6 +28,8 @@ if (!app.commandLine.hasSwitch('user-data-dir') && !existsSync(dbPath())) {
 
 let mainWindow: BrowserWindow | null = null
 let services: Services | null = null
+let cloud: DesktopCloud | null = null
+let quitting = false
 
 async function startServices(): Promise<Services> {
   await backupBeforeMigrations()
@@ -70,7 +73,11 @@ if (!app.requestSingleInstanceLock()) {
     }
 
     applySecurityPolicies()
-    registerIpcHandlers(createHandlers(services))
+    const backups = createBackupActions(services.ctx.db)
+    cloud = createDesktopCloud(services.ctx.db, backups)
+    registerIpcHandlers(createHandlers(services, backups, cloud))
+    // Backup diario en Google Drive (si hay cuenta conectada), sin bloquear la ventana.
+    void cloud.auto('start')
     mainWindow = createMainWindow()
     mainWindow.on('closed', () => (mainWindow = null))
 
@@ -81,6 +88,15 @@ if (!app.requestSingleInstanceLock()) {
 
   app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
+  })
+
+  // Al cerrar, si hubo cambios desde el último backup en Drive, se sube uno antes de salir (con tope).
+  app.on('before-quit', (event) => {
+    if (quitting || !cloud) return
+    event.preventDefault()
+    quitting = true
+    const timeout = new Promise((resolve) => setTimeout(resolve, 15_000))
+    void Promise.race([cloud.auto('close'), timeout]).finally(() => app.quit())
   })
 
   app.on('will-quit', () => {

@@ -57,3 +57,5 @@ export type YearReport = z.infer<typeof s.yearReportSchema>
 export type ExportRequest = z.infer<typeof s.exportRequestSchema>
 export type ExportResult = z.infer<typeof s.exportResultSchema>
 export type BackupInfo = z.infer<typeof s.backupInfoSchema>
+export type CloudStatus = z.infer<typeof s.cloudStatusSchema>
+export type CloudBackupInfo = z.infer<typeof s.cloudBackupInfoSchema>
