@@ -1,0 +1,61 @@
+name: pwa
+
+# Versión iPhone (PWA): el export web de apps/mobile publicado en Cloudflare Pages
+# (app.chanchitoapp.com.ar). main → producción; cada PR → vista previa en <rama>.chanchito-app.pages.dev.
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - .github/workflows/pwa.yml
+  pull_request:
+    paths:
+      - apps/mobile/**
+      - packages/core/**
+      - .github/workflows/pwa.yml
+  workflow_dispatch:
+
+concurrency:
+  group: pwa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      EXPO_NO_TELEMETRY: 1
+      HAS_CLOUDFLARE: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    permissions:
+      contents: read
+      deployments: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+      - run: npm ci
+        working-directory: apps/mobile
+      - name: Export web + service worker
+        working-directory: apps/mobile
+        run: npm run build:pwa
+      # Crea el proyecto la primera vez (después falla porque ya existe, y no pasa nada).
+      - name: Proyecto de Cloudflare Pages
+        if: env.HAS_CLOUDFLARE == 'true' && github.event.pull_request.head.repo.fork != true
+        continue-on-error: true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages project create chanchito-app --production-branch=main
+      - name: Publicar en Cloudflare Pages
+        if: env.HAS_CLOUDFLARE == 'true' && github.event.pull_request.head.repo.fork != true
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: >-
+            pages deploy apps/mobile/dist-pwa --project-name=chanchito-app
+            --branch=${{ github.head_ref || github.ref_name }} --commit-dirty=true

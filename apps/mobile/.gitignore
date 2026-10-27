@@ -9,3 +9,4 @@ ios/
 *.aab
 dist-web/
 test-results/
+dist-pwa/

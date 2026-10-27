@@ -5,6 +5,7 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { getAppServices, type AppServices } from '@/lib/services'
 import { storageReady } from '@/lib/storage-ready'
+import { startPwa } from '@/lib/pwa'
 import { queryClient } from '@/lib/query'
 import { Toaster } from '@/components/toaster'
 import { useColors, useIsDark, type Colors } from '@/lib/theme'
@@ -49,6 +50,9 @@ export default function RootLayout() {
       },
     )
   }, [state])
+
+  // Versión web (PWA): sin internet y aviso de versión nueva.
+  useEffect(() => startPwa(), [])
 
   // En el celu la app casi nunca se cierra: al volver a primer plano se generan los recurrentes
   // del mes nuevo, si cambió.

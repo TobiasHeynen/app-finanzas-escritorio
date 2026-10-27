@@ -12,6 +12,7 @@ export default [
       '.expo/**',
       'dist/**',
       'dist-web/**',
+      'dist-pwa/**',
       'test-results/**',
       'android/**',
       'ios/**',
@@ -24,7 +25,15 @@ export default [
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
   },
-  { files: ['e2e/**/*.mjs'], languageOptions: { globals: globals.node } },
+  { files: ['e2e/**/*.mjs', 'scripts/**/*.mjs'], languageOptions: { globals: globals.node } },
+  {
+    files: ['pwa/**/*.js'],
+    ...tseslint.configs.disableTypeChecked,
+    languageOptions: {
+      ...tseslint.configs.disableTypeChecked.languageOptions,
+      globals: globals.serviceworker,
+    },
+  },
   {
     files: ['metro.config.js', 'plugins/**/*.js'],
     ...tseslint.configs.disableTypeChecked,
