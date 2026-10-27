@@ -68,6 +68,9 @@ export function cloudBackupFileName(platform: CloudPlatform, now: Date): string 
   return `chanchito-${platform}-${date}-${time}.db`
 }
 
+const platformOf = (p: string | undefined): CloudPlatform =>
+  p === 'android' || p === 'iphone' ? p : 'pc'
+
 const isOurs = (f: DriveFile) => f.appProperties['app'] === 'chanchito'
 
 /** Los del dispositivo `deviceId` que sobran (deja los `keep` más nuevos). Los de otros no se tocan. */
@@ -202,7 +205,7 @@ export function createCloudBackup(deps: CloudBackupDeps) {
         createdAt: f.createdTime,
         sizeBytes: f.size,
         deviceName: f.appProperties['deviceName'] ?? 'Otro dispositivo',
-        platform: f.appProperties['platform'] === 'android' ? 'android' : 'pc',
+        platform: platformOf(f.appProperties['platform']),
         thisDevice: f.appProperties['device'] === state.deviceId,
       }))
     },

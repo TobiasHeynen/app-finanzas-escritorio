@@ -1,5 +1,6 @@
 import { openDatabaseAsync } from 'expo-sqlite'
 import { loadBackups } from './backup-store.web'
+import { completeGoogleRedirect } from './cloud-auth.web'
 import { DB_NAME } from './db-name'
 
 export const UNSUPPORTED_MESSAGE =
@@ -21,6 +22,8 @@ export async function storageReady(): Promise<void> {
   ) {
     throw new Error(UNSUPPORTED_MESSAGE)
   }
+  // Volviendo de Google se recarga la app: no hace falta abrir nada.
+  if (await completeGoogleRedirect()) return new Promise<void>(() => undefined)
   await storage.persist?.().catch(() => false)
   await loadBackups()
   await openDatabaseAsync(DB_NAME)

@@ -40,6 +40,9 @@ jobs:
         working-directory: apps/mobile
       - name: Export web + service worker
         working-directory: apps/mobile
+        env:
+          # Cliente OAuth "Aplicación web" de Google (backup en Drive). Sin él, la sección no aparece.
+          EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: ${{ secrets.GOOGLE_WEB_CLIENT_ID }}
         run: npm run build:pwa
       # Crea el proyecto la primera vez (después falla porque ya existe, y no pasa nada).
       - name: Proyecto de Cloudflare Pages

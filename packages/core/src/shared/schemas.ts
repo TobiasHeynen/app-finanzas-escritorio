@@ -566,6 +566,6 @@ export const cloudBackupInfoSchema = z.object({
   createdAt: z.string(),
   sizeBytes: z.number().int(),
   deviceName: z.string(),
-  platform: z.enum(['pc', 'android']),
+  platform: z.enum(['pc', 'android', 'iphone']),
   thisDevice: z.boolean(),
 })
