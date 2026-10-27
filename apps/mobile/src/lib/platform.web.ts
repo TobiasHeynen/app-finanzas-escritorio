@@ -1,8 +1,11 @@
 import { getDocumentAsync } from 'expo-document-picker'
+import { backupsSaved } from './backup-store'
 
 export function reloadApp(): void {
-  // Como en el celu, se vuelve a arrancar desde Inicio.
-  window.location.assign('/')
+  // Como en el celu, se vuelve a arrancar desde Inicio (cuando terminen de guardarse los backups).
+  void backupsSaved().finally(() => {
+    window.location.assign('/')
+  })
 }
 
 export async function pickFile(): Promise<{ name: string; bytes: Uint8Array } | null> {

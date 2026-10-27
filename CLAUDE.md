@@ -60,6 +60,9 @@ Tiene su propio `package.json`/`node_modules` (no hay workspaces): `npm ci` en l
   = export en `dist-pwa/` + `scripts/build-pwa.mjs`, que genera `sw.js` desde `pwa/sw.template.js` (precache de todo,
   versión = hash). `public/` tiene el template `index.html`, manifest, íconos y `_headers` (COOP/COEP). El registro y
   el aviso "versión nueva" están en `src/lib/pwa.web.ts`. GitHub Pages no sirve: no deja poner headers.
+  En web: backups en IndexedDB (`backup-store.web.ts`, copia en memoria cargada al arrancar), archivos con el menú
+  de compartir o descarga (`web-file.ts`), y `install-gate.web.tsx` pide instalarla en el iPhone (en Android/PC
+  recomienda la tienda; no aparece en localhost). Textos con "celu"/"iPhone" salen de `device-label.ts`.
 - CI (job `android`, ubuntu): `test:core-expo`, lint, typecheck, e2e web, `expo prebuild` + `gradlew assembleRelease`
   → artifact `chanchito-android-apk` (firmado con la clave de debug: sólo para probar).
 

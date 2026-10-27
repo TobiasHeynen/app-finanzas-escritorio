@@ -7,6 +7,7 @@ import { Screen } from '@/components/screen'
 import { Button, Card, Muted, SectionTitle } from '@/components/ui'
 import { CloudCard } from '@/features/configuracion/cloud-card'
 import { shareBackup } from '@/lib/backups'
+import { DEVICE, IS_IPHONE_WEB } from '@/lib/device-label'
 import { keys, useApiMutation, useApiQuery } from '@/lib/hooks'
 import { radius, space, useColors } from '@/lib/theme'
 import { toast } from '@/lib/toast'
@@ -60,7 +61,9 @@ export default function BackupsScreen() {
     <Screen back title="Backups y pasar datos">
       <Muted>
         Se hace un backup cada vez que abrís la app y se guardan los últimos 15 de cada tipo.
-        Android además copia los datos de la app a tu cuenta de Google.
+        {IS_IPHONE_WEB
+          ? ' Los datos y estos backups viven sólo en este iPhone: si borrás la app, se borran. Guardá un backup en Archivos (iCloud) de vez en cuando o activá Google Drive.'
+          : ' Android además copia los datos de la app a tu cuenta de Google.'}
       </Muted>
       <CloudCard onRestarting={() => setRestarting(true)} />
       <View style={{ gap: space(3) }}>
@@ -81,21 +84,21 @@ export default function BackupsScreen() {
 
       <Card style={{ gap: space(3) }}>
         <Text style={[styles.title, { color: c.foreground }]}>
-          Pasar los datos entre la PC y el celu
+          Pasar los datos entre la PC y el {DEVICE}
         </Text>
         <View style={styles.step}>
           <Smartphone color={c.primary} size={18} />
           <Text style={[styles.stepText, { color: c.foreground }]}>
-            <Text style={styles.strong}>Del celu a la PC:</Text> tocá un backup de la lista →
-            Compartir (Drive, mail, WhatsApp). En la PC: Configuración → Backups → Restaurar desde
-            archivo.
+            <Text style={styles.strong}>Del {DEVICE} a la PC:</Text> tocá un backup de la lista →
+            Compartir ({IS_IPHONE_WEB ? 'Guardar en Archivos' : 'Drive'}, mail, WhatsApp). En la PC:
+            Configuración → Backups → Restaurar desde archivo.
           </Text>
         </View>
         <View style={styles.step}>
           <Laptop color={c.primary} size={18} />
           <Text style={[styles.stepText, { color: c.foreground }]}>
-            <Text style={styles.strong}>De la PC al celu:</Text> en la PC, Configuración → Backups →
-            Abrir carpeta y mandate el último archivo. Acá: Restaurar desde un archivo.
+            <Text style={styles.strong}>De la PC al {DEVICE}:</Text> en la PC, Configuración →
+            Backups → Abrir carpeta y mandate el último archivo. Acá: Restaurar desde un archivo.
           </Text>
         </View>
         <Muted style={{ fontSize: 12 }}>
@@ -104,7 +107,7 @@ export default function BackupsScreen() {
       </Card>
 
       <View style={{ gap: space(2) }}>
-        <SectionTitle>Backups en este celu</SectionTitle>
+        <SectionTitle>Backups en este {DEVICE}</SectionTitle>
         {isLoading || !backups ? (
           <ActivityIndicator color={c.primary} />
         ) : backups.length === 0 ? (
