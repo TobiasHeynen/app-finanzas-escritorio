@@ -165,6 +165,9 @@ section h2 {
 .grid.two {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
+.grid.three {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
 .grid .card h3 {
   margin: 0 0 6px;
   font-size: 1.05rem;
