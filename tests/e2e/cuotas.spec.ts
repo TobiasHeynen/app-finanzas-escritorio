@@ -28,7 +28,9 @@ test('cargar una compra en cuotas con tarjeta y verla en Tarjetas', async ({ pag
   const visa = page.locator('[data-testid^="card-"]', { hasText: 'VISA' })
   await expect(visa.getByText('Heladera')).toBeVisible()
   await expect(visa.getByText('0 de 12')).toBeVisible()
-  await expect(visa).toContainText('Comprometido: $ 120.000')
+  await expect(visa).toContainText('Faltan $ 120.000')
+  // Lo comprometido mira 12 meses: si hoy ya cerró el resumen, la última cuota cae fuera.
+  await expect(visa).toContainText(/Comprometido: \$\s1[12]0\.000/)
 
   // Dos meses adelante ya hay una cuota de una compra de antes: va en su propio grupo.
   await page.getByRole('link', { name: 'Inicio' }).click()
