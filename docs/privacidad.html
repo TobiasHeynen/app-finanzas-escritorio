@@ -19,17 +19,29 @@
 
       <div class="card">
         <strong>En corto: Chanchito no recolecta, no envía y no comparte ningún dato.</strong>
-        Todo lo que cargás queda guardado en tu computadora o en tu celular. Si activás el backup en
-        Google Drive (opcional), una copia va a tu propio Drive y nunca pasa por servidores de
-        Chanchito.
+        Todo lo que cargás queda guardado en tu computadora, tu celular o tu iPhone. Si activás el
+        backup en Google Drive (opcional), una copia va a tu propio Drive y nunca pasa por
+        servidores de Chanchito.
       </div>
 
       <h2>Qué datos maneja la app</h2>
       <p>
         Los gastos, ingresos, tarjetas, ahorros, metas y la configuración que cargás se guardan en
         un archivo local de tu equipo (en la carpeta de datos de la app de tu usuario de Windows, o
-        en el almacenamiento privado de la app en Android), junto con los backups automáticos que
+        en el almacenamiento privado de la app en Android y, en el iPhone, en el almacenamiento
+        privado del navegador para app.chanchitoapp.com.ar), junto con los backups automáticos que
         hace la app.
+      </p>
+
+      <h2>Versión para iPhone</h2>
+      <p>
+        En el iPhone, Chanchito es una web app que se instala desde Safari ("Agregar a inicio"). La
+        página se descarga de app.chanchitoapp.com.ar (alojada en Cloudflare Pages) y después
+        funciona sin internet: tus datos nunca se envían a ese sitio. Cloudflare puede registrar
+        datos técnicos de la descarga (como la dirección IP) según su
+        <a href="https://www.cloudflare.com/es-es/privacypolicy/">política de privacidad</a>; esa
+        información no llega a Chanchito. Si borrás la app de la pantalla de inicio, iOS borra sus
+        datos.
       </p>
 
       <h2>Qué datos NO se recolectan</h2>
@@ -73,12 +85,13 @@
           acceso.
         </li>
         <li>
-          Se hace un backup por día y al cerrar la app si hubo cambios, y se guardan los últimos 7 de
-          cada dispositivo. El permiso de acceso queda guardado de forma segura en tu dispositivo.
+          Se hace un backup por día y al cerrar la app si hubo cambios, y se guardan los últimos 7
+          de cada dispositivo. El permiso de acceso queda guardado de forma segura en tu dispositivo
+          (en el iPhone es un permiso temporal de una hora que se renueva pasando por Google).
         </li>
         <li>
-          Podés desconectar la cuenta cuando quieras desde la app. Para borrar los backups, en Google
-          Drive entrá a Configuración → Administrar aplicaciones → Chanchito → Borrar datos
+          Podés desconectar la cuenta cuando quieras desde la app. Para borrar los backups, en
+          Google Drive entrá a Configuración → Administrar aplicaciones → Chanchito → Borrar datos
           ocultos de la app. También podés quitarle el acceso desde
           <a href="https://myaccount.google.com/permissions">tu cuenta de Google</a>.
         </li>
@@ -104,8 +117,8 @@
         Si instalaste Chanchito desde Google Play, Google puede recopilar datos de la descarga y del
         uso del dispositivo según su propia
         <a href="https://policies.google.com/privacy?hl=es-419">política de privacidad</a>. Esa
-        información no llega a Chanchito. La app sólo usa internet para el backup en Google Drive, si
-        lo activás, y no pide permisos de ubicación, contactos ni cámara.
+        información no llega a Chanchito. La app sólo usa internet para el backup en Google Drive,
+        si lo activás, y no pide permisos de ubicación, contactos ni cámara.
       </p>
 
       <h2>Cómo borrar tus datos</h2>
@@ -114,15 +127,16 @@
         borrarlos del todo, eliminá la carpeta <code>%APPDATA%\Chanchito</code> (o
         <code>%APPDATA%\Mis Finanzas</code> si usaste una versión anterior). Si la instalaste desde
         la Store, se borran al desinstalarla. En Android, se borran al desinstalar la app o desde
-        Ajustes → Apps → Chanchito → Almacenamiento → Borrar datos. Los backups en Google Drive se
-        borran desde Drive, como se explica más arriba.
+        Ajustes → Apps → Chanchito → Almacenamiento → Borrar datos. En el iPhone, se borran al
+        eliminar el ícono de la pantalla de inicio. Los backups en Google Drive se borran desde
+        Drive, como se explica más arriba.
       </p>
 
       <h2>Contacto</h2>
       <p>
         Si tenés dudas, escribime a
-        <a href="mailto:chanchito.app.of@gmail.com">chanchito.app.of@gmail.com</a> o abrí un tema
-        en <a href="https://github.com/TobiasHeynen/app-finanzas-escritorio/issues">GitHub</a>.
+        <a href="mailto:chanchito.app.of@gmail.com">chanchito.app.of@gmail.com</a> o abrí un tema en
+        <a href="https://github.com/TobiasHeynen/app-finanzas-escritorio/issues">GitHub</a>.
       </p>
 
       <footer>© 2026 Tobias Heynen</footer>

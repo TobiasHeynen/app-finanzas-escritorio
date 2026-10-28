@@ -8,14 +8,14 @@ const PLAY_URL = 'https://play.google.com/store/apps/details?id=ar.tobiasheynen.
 const STORE_URL = 'https://apps.microsoft.com/search?query=Chanchito'
 const SKIP_KEY = 'chanchito:usar-sin-instalar'
 
-type Device = 'iphone' | 'iphone-otro-navegador' | 'android' | 'pc'
+type Device = 'iphone' | 'iphone-otro-navegador' | 'android' | 'mac' | 'pc'
 
 function detectDevice(): Device {
   const ua = navigator.userAgent
   const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
   if (ios) return /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) ? 'iphone-otro-navegador' : 'iphone'
   if (/Android/.test(ua)) return 'android'
-  return 'pc'
+  return /Macintosh/.test(ua) ? 'mac' : 'pc'
 }
 
 function isInstalled(): boolean {
@@ -65,7 +65,11 @@ function InstallScreen({ device, onUseAnyway }: { device: Device; onUseAnyway: (
       <View style={styles.header}>
         <Image source={{ uri: '/icons/apple-touch-icon.png' }} style={styles.icon} />
         <Text style={[styles.title, { color: c.foreground }]}>
-          {iphone ? 'Instalá Chanchito en tu iPhone' : 'Chanchito para iPhone'}
+          {iphone
+            ? 'Instalá Chanchito en tu iPhone'
+            : device === 'mac'
+              ? 'Instalá Chanchito en tu Mac'
+              : 'Chanchito para iPhone'}
         </Text>
       </View>
 
@@ -89,6 +93,13 @@ function InstallScreen({ device, onUseAnyway }: { device: Device; onUseAnyway: (
             <Text style={styles.strong}>Safari</Text> y desde ahí agregala a la pantalla de inicio.
           </Text>
         </Card>
+      ) : device === 'mac' ? (
+        <Card>
+          <Text style={[styles.text, { color: c.foreground }]}>
+            En la Mac podés instalarla desde Safari: <Text style={styles.strong}>Archivo</Text> →{' '}
+            <Text style={styles.strong}>Agregar al Dock</Text>.
+          </Text>
+        </Card>
       ) : (
         <Card style={{ gap: space(3) }}>
           <Text style={[styles.text, { color: c.foreground }]}>
@@ -106,7 +117,7 @@ function InstallScreen({ device, onUseAnyway }: { device: Device; onUseAnyway: (
 
       <Muted>
         Tus datos quedan sólo en este dispositivo: no hay cuentas ni servidores.
-        {iphone
+        {iphone || device === 'mac'
           ? ' Usada desde Safari sin instalar, iOS puede borrarlos si pasan unos días sin abrirla, y no pasan a la app instalada.'
           : ''}
       </Muted>
