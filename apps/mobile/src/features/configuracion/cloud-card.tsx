@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native'
 import { format, formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
@@ -7,6 +7,8 @@ import type { CloudBackupInfo } from '@shared/types'
 import { ChoiceSheet } from '@/components/choice-sheet'
 import { Button, Card, Muted } from '@/components/ui'
 import { call } from '@/lib/api'
+import { consumeJustConnected } from '@/lib/cloud-auth'
+import { DEVICE } from '@/lib/device-label'
 import { keys, useApiMutation, useApiQuery } from '@/lib/hooks'
 import { radius, space, useColors } from '@/lib/theme'
 
@@ -28,19 +30,27 @@ export function CloudCard({ onRestarting }: { onRestarting: () => void }) {
     invalidate: [keys.cloud, keys.cloudList],
     success: 'Backup subido a Google Drive',
   })
+  // Recién conectado: si hay un backup de otro equipo se ofrece traerlo; si no, se sube el primero.
+  const afterConnect = () => {
+    call('cloud:list', {})
+      .then((backups) => {
+        const fromOthers = backups.find((b) => !b.thisDevice)
+        if (fromOthers) setOffer(fromOthers)
+        else backupNow.mutate({})
+      })
+      .catch(() => backupNow.mutate({}))
+  }
   const connect = useApiMutation('cloud:connect', {
     invalidate: [keys.cloud],
     onSuccess: (s) => {
-      if (!s.connected) return
-      call('cloud:list', {})
-        .then((backups) => {
-          const fromOthers = backups.find((b) => !b.thisDevice)
-          if (fromOthers) setOffer(fromOthers)
-          else backupNow.mutate({})
-        })
-        .catch(() => backupNow.mutate({}))
+      if (s.connected) afterConnect()
     },
   })
+  // En la versión web conectar recarga la app al volver de Google.
+  useEffect(() => {
+    if (consumeJustConnected()) afterConnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const disconnect = useApiMutation('cloud:disconnect', {
     invalidate: [keys.cloud, keys.cloudList],
     success: 'Desconectaste tu cuenta de Google',
@@ -96,16 +106,16 @@ export function CloudCard({ onRestarting }: { onRestarting: () => void }) {
                     onPress={() => setConfirming(b)}
                     style={({ pressed }) => [styles.row, pressed && { backgroundColor: c.accent }]}
                   >
-                    {b.platform === 'android' ? (
-                      <Smartphone color={c.mutedForeground} size={16} />
-                    ) : (
+                    {b.platform === 'pc' ? (
                       <Laptop color={c.mutedForeground} size={16} />
+                    ) : (
+                      <Smartphone color={c.mutedForeground} size={16} />
                     )}
                     <Text style={[styles.rowTitle, { color: c.foreground }]}>
                       {when(b.createdAt)}
                     </Text>
                     <Muted style={{ fontSize: 12 }}>
-                      {b.thisDevice ? 'Este celu' : b.deviceName}
+                      {b.thisDevice ? `Este ${DEVICE}` : b.deviceName}
                     </Muted>
                   </Pressable>
                 ))}
@@ -123,8 +133,8 @@ export function CloudCard({ onRestarting }: { onRestarting: () => void }) {
         <>
           <Muted>
             Opcional. Chanchito guarda una copia de tus datos en una carpeta oculta de tu Drive que
-            sólo ve la app: no puede leer el resto de tus archivos. Si cambiás de celular, te
-            conectás y recuperás todo.
+            sólo ve la app: no puede leer el resto de tus archivos. Si cambiás de{' '}
+            {DEVICE === 'celu' ? 'celular' : 'iPhone'}, te conectás y recuperás todo.
           </Muted>
           <Button
             label="Conectar con Google"
@@ -139,7 +149,7 @@ export function CloudCard({ onRestarting }: { onRestarting: () => void }) {
         open={confirming !== null}
         onClose={() => setConfirming(null)}
         title={confirming ? `¿Restaurar el backup del ${when(confirming.createdAt)}?` : ''}
-        description="Todos los datos de este celu se reemplazan por los del backup. Antes se guarda un backup de seguridad de lo que tenés ahora, y la app se reinicia."
+        description={`Todos los datos de este ${DEVICE} se reemplazan por los del backup. Antes se guarda un backup de seguridad de lo que tenés ahora, y la app se reinicia.`}
         choices={[
           {
             label: 'Restaurar',
@@ -154,7 +164,7 @@ export function CloudCard({ onRestarting }: { onRestarting: () => void }) {
         title="Encontramos un backup en tu Drive"
         description={
           offer
-            ? `Hay un backup de ${offer.deviceName === 'PC' ? 'tu PC' : 'otro celular'} del ${when(offer.createdAt)}. ¿Querés traer esos datos a este celu? Lo que tenés acá se reemplaza (antes se guarda un backup, por las dudas).`
+            ? `Hay un backup de ${offer.deviceName === 'PC' ? 'tu PC' : 'otro dispositivo'} del ${when(offer.createdAt)}. ¿Querés traer esos datos a este ${DEVICE}? Lo que tenés acá se reemplaza (antes se guarda un backup, por las dudas).`
             : undefined
         }
         choices={[

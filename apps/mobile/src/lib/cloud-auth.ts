@@ -113,3 +113,8 @@ export function createGoogleAuth(): CloudAuth {
     },
   }
 }
+
+/** Sólo la versión web vuelve de Google recargando la app; en Android el login no sale de la pantalla. */
+export function consumeJustConnected(): boolean {
+  return false
+}

@@ -142,10 +142,10 @@ export function CloudSection({ onRestarting }: { onRestarting: () => void }) {
             <ul className="divide-y">
               {list.data.map((b) => (
                 <li key={b.id} className="group flex items-center gap-3 px-4 py-2.5">
-                  {b.platform === 'android' ? (
-                    <Smartphone className="size-4 text-muted-foreground" />
-                  ) : (
+                  {b.platform === 'pc' ? (
                     <Monitor className="size-4 text-muted-foreground" />
+                  ) : (
+                    <Smartphone className="size-4 text-muted-foreground" />
                   )}
                   <span className="flex-1 text-sm font-medium first-letter:uppercase">
                     {format(new Date(b.createdAt), "EEEE d 'de' MMMM yyyy, HH:mm", { locale: es })}
