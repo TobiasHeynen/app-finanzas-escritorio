@@ -43,3 +43,8 @@ export const backupStore: BackupStore = {
     return true
   },
 }
+
+/** En el celu los backups se escriben al toque: no hay nada que esperar. */
+export function backupsSaved(): Promise<void> {
+  return Promise.resolve()
+}

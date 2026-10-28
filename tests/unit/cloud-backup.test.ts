@@ -174,6 +174,26 @@ describe('backup en Google Drive', () => {
     })
   })
 
+  it('reconoce los backups del iPhone y trata lo desconocido como PC', async () => {
+    const t = setup()
+    for (const [id, platform] of [
+      ['iphone-1', 'iphone'],
+      ['raro-1', 'tostadora'],
+    ] as const) {
+      t.drive.files.set(id, {
+        id,
+        name: `chanchito-${platform}-x.db`,
+        createdTime: '2020-01-01T00:00:00.000Z',
+        size: 3,
+        appProperties: { app: 'chanchito', device: id, deviceName: 'iPhone', platform },
+        bytes: new Uint8Array(3),
+      })
+    }
+    const list = await t.cloud.list()
+    expect(list.find((b) => b.id === 'iphone-1')?.platform).toBe('iphone')
+    expect(list.find((b) => b.id === 'raro-1')?.platform).toBe('pc')
+  })
+
   it('cloudBackupsToPrune ignora archivos que no son de Chanchito', () => {
     const file = (id: string, device: string, app = 'chanchito'): DriveFile => ({
       id,

@@ -60,6 +60,9 @@ Tiene su propio `package.json`/`node_modules` (no hay workspaces): `npm ci` en l
   = export en `dist-pwa/` + `scripts/build-pwa.mjs`, que genera `sw.js` desde `pwa/sw.template.js` (precache de todo,
   versión = hash). `public/` tiene el template `index.html`, manifest, íconos y `_headers` (COOP/COEP). El registro y
   el aviso "versión nueva" están en `src/lib/pwa.web.ts`. GitHub Pages no sirve: no deja poner headers.
+  En web: backups en IndexedDB (`backup-store.web.ts`, copia en memoria cargada al arrancar), archivos con el menú
+  de compartir o descarga (`web-file.ts`), y `install-gate.web.tsx` pide instalarla en el iPhone (en Android/PC
+  recomienda la tienda; no aparece en localhost). Textos con "celu"/"iPhone" salen de `device-label.ts`.
 - CI (job `android`, ubuntu): `test:core-expo`, lint, typecheck, e2e web, `expo prebuild` + `gradlew assembleRelease`
   → artifact `chanchito-android-apk` (firmado con la clave de debug: sólo para probar).
 
@@ -207,8 +210,13 @@ error se loguea en main y viaja como `INTERNAL` con mensaje genérico: nunca sta
   (`MAIN_VITE_GOOGLE_CLIENT_ID/SECRET`, secrets `GOOGLE_DESKTOP_CLIENT_*` en `build.yml`); sin eso la sección no aparece.
   Al cerrar se espera el backup hasta 15 s (`before-quit`). Todo en main: el renderer nunca ve tokens.
 - Celu: `apps/mobile/src/lib/cloud*.ts` con `@react-native-google-signin/google-signin` (selector nativo; los
-  tokens los maneja Play Services) y `expo/fetch` para cuerpos binarios. En web la función no existe
-  (`cloud-auth.web.ts`). La app pide permiso de INTERNET sólo por esto.
+  tokens los maneja Play Services) y `expo/fetch` para cuerpos binarios. La app pide permiso de INTERNET sólo por esto.
+- Web/PWA (`cloud-auth.web.ts`, `cloud.web.ts`, plataforma `iphone`): OAuth implícito por **redirección** (COOP
+  rompe los popups), token de 1 h en localStorage, sin refresh. Si venció, las acciones del usuario pasan por Google
+  con `prompt=none` y al volver se retoma (p. ej. el backup); al volver la app se recarga en la pantalla donde
+  estaba. El backup del día se ofrece con un toast si el token venció. Cliente por env al exportar
+  (`EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID`, secret `GOOGLE_WEB_CLIENT_ID` en `pwa.yml`), mismo proyecto de Google Cloud
+  que PC y Android (si no, no ve la carpeta appData de los otros).
 - Configuración de Google Cloud (clientes OAuth, SHA-1): ver el PR de la función.
 
 ## Empaquetado y CI
