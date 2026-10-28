@@ -61,3 +61,18 @@ test('un archivo que no es un backup se rechaza', async ({ page }) => {
   await chooser.setFiles({ name: 'foto.jpg', mimeType: 'image/jpeg', buffer: Buffer.alloc(500, 7) })
   await expect(page.getByText(/no es un backup de Chanchito/)).toBeVisible()
 })
+
+test('los backups siguen ahí después de cerrar y volver a abrir la app', async ({ page }) => {
+  await openApp(page)
+  await addExpense(page, '1000')
+  await openBackups(page)
+  await page.getByRole('button', { name: 'Hacer un backup ahora' }).click()
+  await expect(page.getByTestId('backup-row')).toHaveCount(1)
+
+  await page.goto('/')
+  await expect(page.getByText('Disponible')).toBeVisible({ timeout: 15_000 })
+  await openBackups(page)
+  // El manual de antes y el automático de este inicio.
+  await expect(page.getByTestId('backup-row')).toHaveCount(2)
+  await expect(page.getByTestId('backup-row').filter({ hasText: 'Manual' })).toHaveCount(1)
+})

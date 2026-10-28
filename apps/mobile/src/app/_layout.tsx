@@ -7,6 +7,7 @@ import { getAppServices, type AppServices } from '@/lib/services'
 import { storageReady } from '@/lib/storage-ready'
 import { startPwa } from '@/lib/pwa'
 import { queryClient } from '@/lib/query'
+import { InstallGate } from '@/components/install-gate'
 import { Toaster } from '@/components/toaster'
 import { useColors, useIsDark, type Colors } from '@/lib/theme'
 
@@ -81,23 +82,25 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={theme}>
       <StatusBar style={dark ? 'light' : 'dark'} />
-      {state === null ? null : state.ok ? (
-        <QueryClientProvider client={queryClient}>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(tabs)" />
-            {MODALS.map((name) => (
-              <Stack.Screen
-                key={name}
-                name={name}
-                options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
-              />
-            ))}
-          </Stack>
-          <Toaster bottomOffset={64} />
-        </QueryClientProvider>
-      ) : (
-        <BootError message={state.message} colors={colors} />
-      )}
+      <InstallGate>
+        {state === null ? null : state.ok ? (
+          <QueryClientProvider client={queryClient}>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(tabs)" />
+              {MODALS.map((name) => (
+                <Stack.Screen
+                  key={name}
+                  name={name}
+                  options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+                />
+              ))}
+            </Stack>
+            <Toaster bottomOffset={64} />
+          </QueryClientProvider>
+        ) : (
+          <BootError message={state.message} colors={colors} />
+        )}
+      </InstallGate>
     </ThemeProvider>
   )
 }
