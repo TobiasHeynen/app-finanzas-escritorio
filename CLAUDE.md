@@ -55,6 +55,11 @@ Tiene su propio `package.json`/`node_modules` (no hay workspaces): `npm ci` en l
   `node_modules/expo/bundledNativeModules.json` (`expo install` necesita la API de Expo, bloqueada en remoto).
 - Vista previa web (sólo para desarrollo): `npx expo export --platform web` y servir `dist/` con
   `Cross-Origin-Opener-Policy: same-origin` y `Cross-Origin-Embedder-Policy: require-corp`.
+- **PWA (versión iPhone)**: el mismo export web, publicado en Cloudflare Pages (`app.chanchitoapp.com.ar`,
+  proyecto `chanchito-app`) por `.github/workflows/pwa.yml` (main → producción, PR → vista previa). `npm run build:pwa`
+  = export en `dist-pwa/` + `scripts/build-pwa.mjs`, que genera `sw.js` desde `pwa/sw.template.js` (precache de todo,
+  versión = hash). `public/` tiene el template `index.html`, manifest, íconos y `_headers` (COOP/COEP). El registro y
+  el aviso "versión nueva" están en `src/lib/pwa.web.ts`. GitHub Pages no sirve: no deja poner headers.
 - CI (job `android`, ubuntu): `test:core-expo`, lint, typecheck, e2e web, `expo prebuild` + `gradlew assembleRelease`
   → artifact `chanchito-android-apk` (firmado con la clave de debug: sólo para probar).
 

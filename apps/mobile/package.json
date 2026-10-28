@@ -41,7 +41,8 @@
     "export:android": "expo export --platform android",
     "export:web": "expo export --platform web",
     "postinstall": "node scripts/fix-expo-sqlite-web.mjs",
-    "test:e2e": "expo export --platform web --output-dir dist-web && playwright test -c e2e/playwright.config.ts"
+    "test:e2e": "expo export --platform web --output-dir dist-web && playwright test -c e2e/playwright.config.ts",
+    "build:pwa": "expo export --platform web --output-dir dist-pwa && node scripts/build-pwa.mjs dist-pwa"
   },
   "private": true,
   "description": "Chanchito para Android (Expo)",
