@@ -4,7 +4,12 @@ const FILES = [] /* __FILES__ */
 const CACHE = 'chanchito-' + VERSION
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(FILES)))
+  // `reload`: siempre de la red, nunca del caché HTTP (que puede tener una versión anterior).
+  event.waitUntil(
+    caches
+      .open(CACHE)
+      .then((cache) => cache.addAll(FILES.map((url) => new Request(url, { cache: 'reload' })))),
+  )
 })
 
 self.addEventListener('activate', (event) => {
