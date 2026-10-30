@@ -4,11 +4,12 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { getAppServices, type AppServices } from '@/lib/services'
-import { storageReady } from '@/lib/storage-ready'
+import { bootAction, storageReady, type BootAction } from '@/lib/storage-ready'
 import { startPwa } from '@/lib/pwa'
 import { queryClient } from '@/lib/query'
 import { InstallGate } from '@/components/install-gate'
 import { Toaster } from '@/components/toaster'
+import { Button } from '@/components/ui'
 import { useColors, useIsDark, type Colors } from '@/lib/theme'
 
 /** Formularios: se abren desde abajo, como hojas. */
@@ -23,7 +24,8 @@ const MODALS = [
   'saldar',
 ]
 
-type Boot = { ok: true; app: AppServices } | { ok: false; message: string } | null
+type Boot =
+  { ok: true; app: AppServices } | { ok: false; message: string; action?: BootAction | null } | null
 
 function boot(): Boot {
   try {
@@ -47,7 +49,11 @@ export default function RootLayout() {
         setState(boot())
       },
       (err: unknown) => {
-        setState({ ok: false, message: err instanceof Error ? err.message : String(err) })
+        setState({
+          ok: false,
+          message: err instanceof Error ? err.message : String(err),
+          action: bootAction(err),
+        })
       },
     )
   }, [state])
@@ -98,20 +104,33 @@ export default function RootLayout() {
             <Toaster bottomOffset={64} />
           </QueryClientProvider>
         ) : (
-          <BootError message={state.message} colors={colors} />
+          <BootError message={state.message} action={state.action} colors={colors} />
         )}
       </InstallGate>
     </ThemeProvider>
   )
 }
 
-function BootError({ message, colors }: { message: string; colors: Colors }) {
+function BootError({
+  message,
+  action,
+  colors,
+}: {
+  message: string
+  action?: BootAction | null
+  colors: Colors
+}) {
   return (
     <View style={[styles.error, { backgroundColor: colors.background }]}>
       <Text style={[styles.errorTitle, { color: colors.foreground }]}>
-        No se pudo abrir la base de datos
+        {action?.title ?? 'No se pudo abrir la base de datos'}
       </Text>
       <Text style={{ color: colors.mutedForeground }}>{message}</Text>
+      {action ? (
+        <View style={styles.errorAction}>
+          <Button label={action.label} onPress={action.run} />
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -119,4 +138,5 @@ function BootError({ message, colors }: { message: string; colors: Colors }) {
 const styles = StyleSheet.create({
   error: { flex: 1, justifyContent: 'center', padding: 24, gap: 8 },
   errorTitle: { fontSize: 18, fontWeight: '600' },
+  errorAction: { marginTop: 8, alignSelf: 'flex-start' },
 })

@@ -1,7 +1,9 @@
 import { openDatabaseAsync } from 'expo-sqlite'
-import { loadBackups } from './backup-store.web'
+import { backupsSaved, loadBackups } from './backup-store.web'
 import { completeGoogleRedirect } from './cloud-auth.web'
 import { DB_NAME } from './db-name'
+import { DbBusyError, openExclusive, resumeUrl } from './db-lock.web'
+import type { BootAction } from './storage-ready'
 
 export const UNSUPPORTED_MESSAGE =
   'Este navegador no puede guardar los datos de Chanchito. En el iPhone necesitás iOS 16.4 o más ' +
@@ -26,5 +28,19 @@ export async function storageReady(): Promise<void> {
   if (await completeGoogleRedirect()) return new Promise<void>(() => undefined)
   await storage.persist?.().catch(() => false)
   await loadBackups()
-  await openDatabaseAsync(DB_NAME)
+  await openExclusive(async () => {
+    await openDatabaseAsync(DB_NAME)
+  }, backupsSaved)
+}
+
+/** Botón de la pantalla de error: retomar la app en esta ventana o reintentar. */
+export function bootAction(err: unknown): BootAction | null {
+  if (!(err instanceof DbBusyError)) return null
+  return {
+    title: 'Chanchito está abierta en otra ventana',
+    label: err.paused ? 'Usar acá' : 'Reintentar',
+    run: () => {
+      window.location.assign(resumeUrl())
+    },
+  }
 }
